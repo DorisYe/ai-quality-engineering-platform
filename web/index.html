@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Event Monitoring Dashboard</title>
+<style>
+:root{font-family:Inter,Segoe UI,Arial,sans-serif;color:#192338;background:#f4f6fa}*{box-sizing:border-box}body{margin:0}.shell{max-width:1180px;margin:auto;padding:32px 22px}header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}h1{font-size:29px;margin:0 0 8px}p{color:#667085}.pill{display:inline-block;border-radius:18px;background:#e6f5ef;color:#18784c;padding:8px 13px;font-size:13px}.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:24px 0}.metric,.panel{background:white;border:1px solid #e4e8f0;border-radius:14px;box-shadow:0 2px 12px #172a4210}.metric{padding:20px}.metric strong{font-size:29px;display:block;margin-top:9px}.metric span{color:#64748b;font-size:14px}.panel{padding:20px}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}.filters{display:flex;gap:10px;flex-wrap:wrap}select,button{font:inherit;border-radius:8px;padding:9px 12px}select{border:1px solid #cbd5e1;background:white}button{border:0;background:#2558a8;color:white;cursor:pointer}button:hover{background:#164681}button:disabled{background:#a6afbc;cursor:not-allowed}table{width:100%;border-collapse:collapse;min-width:850px}th,td{text-align:left;padding:13px 10px;border-bottom:1px solid #eef1f6;font-size:14px}th{color:#64748b;font-weight:600}.scroll{overflow:auto}.sev{font-weight:600}.sev.Critical{color:#ba2929}.sev.Warning{color:#ae6b09}.sev.Info{color:#246b9a}.status{color:#356253}#message{min-height:23px}#message.error{color:#b42318}@media(max-width:600px){.summary{grid-template-columns:1fr}.shell{padding:20px 12px}}
+</style>
+</head>
+<body><main class="shell">
+<header><div><h1>Event Monitoring Dashboard</h1><p>Infrastructure events · Local demonstration application</p></div><span class="pill">● Auto refresh every 3s</span></header>
+<section class="summary"><div class="metric"><span>Total Events</span><strong id="total-count">0</strong></div><div class="metric"><span>Active Events</span><strong id="active-count">0</strong></div><div class="metric"><span>Critical Events</span><strong id="critical-count">0</strong></div></section>
+<section class="panel"><div class="toolbar"><h2>Event History</h2><div class="filters"><label>Severity <select id="severity-filter"><option value="All">All</option><option>Info</option><option>Warning</option><option>Critical</option></select></label><label>Status <select id="status-filter"><option value="All">All</option><option>Active</option><option>Acknowledged</option></select></label><button id="refresh-button" type="button">Refresh</button></div></div>
+<div id="message" role="status" aria-live="polite"></div>
+<div class="scroll"><table><thead><tr><th>Event ID</th><th>Type</th><th>Severity</th><th>Source</th><th>Status</th><th>Created (Local)</th><th>Action</th></tr></thead><tbody id="event-list"><tr><td colspan="7">Loading events...</td></tr></tbody></table></div></section></main>
+<script>
+const list=document.getElementById('event-list');
+const message=document.getElementById('message');
+const severityFilter=document.getElementById('severity-filter');
+const statusFilter=document.getElementById('status-filter');
+let events=[];
+function cell(text, className){const td=document.createElement('td');td.textContent=String(text);if(className)td.className=className;return td;}
+function display(){
+ const visible=events.filter(e=>(severityFilter.value==='All'||e.severity===severityFilter.value)&&(statusFilter.value==='All'||e.status===statusFilter.value));
+ document.getElementById('total-count').textContent=events.length;
+ document.getElementById('active-count').textContent=events.filter(e=>e.status==='Active').length;
+ document.getElementById('critical-count').textContent=events.filter(e=>e.severity==='Critical').length;
+ list.replaceChildren();
+ if(!visible.length){const tr=document.createElement('tr');const td=cell('No events match the selected filters.');td.colSpan=7;tr.append(td);list.append(tr);return;}
+ for(const e of visible){
+  const tr=document.createElement('tr');tr.dataset.eventId=e.id;
+  tr.append(cell(e.id),cell(e.type),cell(e.severity,'sev '+e.severity),cell(e.source),cell(e.status,'status'),cell(new Date(e.created_at).toLocaleString()));
+  const action=cell('');const btn=document.createElement('button');btn.type='button';btn.textContent='Acknowledge';btn.disabled=e.status!=='Active';btn.setAttribute('aria-label','Acknowledge event '+e.id);
+  btn.addEventListener('click',async()=>{btn.disabled=true;message.textContent='Updating event...';message.classList.remove('error');try{const res=await fetch('/api/events/'+encodeURIComponent(e.id)+'/acknowledge',{method:'POST'});if(!res.ok)throw new Error('HTTP '+res.status);await refresh();message.textContent='Event acknowledged.';}catch(err){message.classList.add('error');message.textContent='Failed to acknowledge: '+err.message;btn.disabled=false;}});
+  action.append(btn);tr.append(action);list.append(tr);
+ }
+}
+async function refresh(){
+ try{const res=await fetch('/api/events',{cache:'no-store'});if(!res.ok)throw new Error('HTTP '+res.status);events=await res.json();message.classList.remove('error');display();}
+ catch(err){message.classList.add('error');message.textContent='Failed to load events: '+err.message;}
+}
+severityFilter.addEventListener('change',display);statusFilter.addEventListener('change',display);document.getElementById('refresh-button').addEventListener('click',refresh);
+refresh();setInterval(refresh,3000);
+</script></body></html>

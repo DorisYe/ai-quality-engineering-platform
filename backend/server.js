@@ -1,9 +1,11 @@
 const express = require('express');
 const crypto = require('node:crypto');
+const path = require('node:path');
 const database = require('./database');
 
 const app = express();
 app.use(express.json({ limit: '32kb' }));
+app.use(express.static(path.join(__dirname, '..', 'web')));
 
 const validSeverities = new Set(['Info', 'Warning', 'Critical']);
 const requiredText = value => typeof value === 'string' && value.trim().length > 0 && value.length <= 120;

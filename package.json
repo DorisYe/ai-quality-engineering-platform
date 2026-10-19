@@ -6,10 +6,15 @@
   "scripts": {
     "start": "node backend/server.js",
     "dev": "node backend/server.js",
-    "check": "node --check backend/server.js && node --check backend/database.js"
+    "check": "node --check backend/server.js && node --check backend/database.js",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui"
   },
   "dependencies": {
     "express": "^4.21.2",
     "sql.js": "^1.13.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.0"
   }
 }

@@ -1,0 +1,105 @@
+import { test, expect, type APIRequestContext } from '@playwright/test';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { join } from 'node:path';
+import { EventsPage } from '../pages/EventsPage';
+
+const execFileAsync = promisify(execFile);
+const appUrl = 'http://127.0.0.1:3100';
+
+type EventRecord = {
+  id: string; type: string; severity: string; source: string;
+  status: string; created_at: string;
+};
+
+async function generateFromPowerShell(source: string): Promise<void> {
+  if (process.platform !== 'win32') {
+    throw new Error('This exercise runs the Windows PowerShell event generator. Use Windows for TC-001.');
+  }
+  await execFileAsync('powershell.exe', [
+    '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
+    join(process.cwd(), 'scripts', 'generate-event.ps1'),
+    '-Type', 'StorageCapacityWarning',
+    '-Severity', 'Warning',
+    '-Source', source,
+  ], { timeout: 15000 });
+}
+
+async function createEvent(request: APIRequestContext, severity = 'Warning', source = 'AutomationTest'): Promise<EventRecord> {
+  const response = await request.post('/api/events', {
+    data: { type: 'StorageCapacityWarning', severity, source },
+  });
+  expect(response.status()).toBe(201);
+  return response.json() as Promise<EventRecord>;
+}
+
+test('TC-001: PowerShell event is processed and displayed in the UI', async ({ page, request }) => {
+  const dashboard = new EventsPage(page);
+  await dashboard.open();
+  const source = 'Playwright-' + Date.now();
+  await generateFromPowerShell(source);
+  // The script returns an event ID; look it up via the real backend API.
+  let created: EventRecord | undefined;
+  await expect.poll(async () => {
+    const response = await request.get('/api/events');
+    const events = await response.json() as EventRecord[];
+    created = events.find(item => item.source === source);
+    return created?.status;
+  }, { timeout: 15000 }).toBe('Active');
+  await dashboard.expectEvent(created!.id);
+});
+
+test('TC-002: UI event details match backend record', async ({ page, request }) => {
+  const expected = await createEvent(request, 'Critical', 'DetailsVerification');
+  const dashboard = new EventsPage(page);
+  await dashboard.open();
+  const row = dashboard.row(expected.id);
+  await expect(row).toBeVisible();
+  await expect(row).toContainText(expected.type);
+  await expect(row).toContainText(expected.severity);
+  await expect(row).toContainText(expected.source);
+  await expect(row).toContainText(expected.status);
+});
+
+test('TC-003: UI acknowledgement updates backend status', async ({ page, request }) => {
+  const created = await createEvent(request);
+  const dashboard = new EventsPage(page);
+  await dashboard.open();
+  await dashboard.expectEvent(created.id);
+  await dashboard.acknowledge(created.id);
+  await expect(dashboard.row(created.id)).toContainText('Acknowledged');
+  await expect.poll(async () => {
+    const response = await request.get('/api/events/' + created.id);
+    return ((await response.json()) as EventRecord).status;
+  }).toBe('Acknowledged');
+});
+
+test('TC-004: severity and status filters show matching events', async ({ page, request }) => {
+  const critical = await createEvent(request, 'Critical', 'FilterCritical');
+  await createEvent(request, 'Warning', 'FilterWarning');
+  const dashboard = new EventsPage(page);
+  await dashboard.open();
+  await dashboard.expectEvent(critical.id);
+  await dashboard.filterSeverity('Critical');
+  await dashboard.filterStatus('Active');
+  await expect(dashboard.row(critical.id)).toBeVisible();
+  const rows = dashboard.visibleRows;
+  await expect.poll(() => rows.count()).toBeGreaterThan(0);
+  const count = await rows.count();
+  for (let i = 0; i < count; i++) {
+    await expect(rows.nth(i).locator('td').nth(2)).toHaveText('Critical');
+    await expect(rows.nth(i).locator('td').nth(4)).toHaveText('Active');
+  }
+});
+
+test('TC-005: invalid event payload is rejected without being stored', async ({ request }) => {
+  const uniqueSource = 'Invalid-' + Date.now();
+  const response = await request.post('/api/events', {
+    data: { type: 'BadEvent', severity: 'Unknown', source: uniqueSource },
+  });
+  expect(response.status()).toBe(400);
+  const eventsResponse = await request.get('/api/events');
+  expect(eventsResponse.ok()).toBeTruthy();
+  const events = await eventsResponse.json() as EventRecord[];
+  expect(events.find(event => event.source === uniqueSource)).toBeUndefined();
+});

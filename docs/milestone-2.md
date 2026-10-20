@@ -23,10 +23,10 @@ To use UI mode: `npx.cmd playwright test --ui`
 
 ## What to expect
 
-- TC-001 invokes the trusted local PowerShell event generation script, queries the backend, and verifies that the generated event reaches the dashboard.
+- TC-001 invokes the trusted local PowerShell (Windows) or Bash (Linux) event generation script, queries the backend, and verifies that the generated event reaches the dashboard.
 - TC-002 compares a database-backed API record to UI text.
 - TC-003 acknowledges an event in the browser and then verifies the API state.
-- TC-004 checks Severity and Status filters.
+- TC-004 checks positive and negative Severity/Status filter assertions and status changes.
 - TC-005 sends invalid input and confirms rejection and no persisted record.
 
 ## Design choices
@@ -35,8 +35,8 @@ To use UI mode: `npx.cmd playwright test --ui`
 - Real API calls generate test data; browser waits rely on Playwright's retrying assertions, not fixed sleeps.
 - Each generated event has a unique ID assigned by the backend. TC-001 uses a distinct source to match its scripted event.
 - HTML reports, traces, screenshots and test result files are ignored by Git.
-- The PowerShell subprocess uses a process-scoped `-ExecutionPolicy Bypass` to run only the repository's reviewed local script; do not use this for untrusted scripts. Group Policy may prevent this on managed systems.
-- This is an educational test suite, not a production-hardened environment. TC-001 currently requires Windows.
+- On Windows, the PowerShell subprocess uses a process-scoped `-ExecutionPolicy Bypass` to run only the repository's reviewed local script; do not use this for untrusted scripts. Group Policy may prevent this on managed systems.
+- This is an educational test suite, not a production-hardened environment. Linux CI requires Bash, curl and Node.js; Windows requires PowerShell.
 - No tests have been verified on your local computer until you run them and share their results.
 
 ## Interview reflection

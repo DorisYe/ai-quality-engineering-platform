@@ -17,3 +17,11 @@ Command: `npx.cmd playwright test`
 **Follow-up checks:** repeated execution, HTML report review, failure evidence capture, script portability for CI. Current TC-001 requires Windows PowerShell, so Linux-hosted GitHub Actions needs a Bash-compatible variant or Windows runner.
 
 **Scope note:** passing checks demonstrate covered workflows; not exhaustive product validation.
+
+## Stability validation — 2026-10-20
+
+Command: `npx.cmd playwright test --repeat-each=3`
+
+**User-reported result:** 15 passed, 0 failed, 15.0 seconds, 1 worker. Each of TC-001–TC-005 passed all three repetitions in the same local Windows environment.
+
+This is a successful local repeatability check; cross-browser, parallel, CI and environment portability checks remain outstanding.

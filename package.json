@@ -1,0 +1,15 @@
+{
+  "name": "ai-quality-engineering-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Event-driven quality engineering practice application",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node backend/server.js",
+    "check": "node --check backend/server.js && node --check backend/database.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "sql.js": "^1.13.0"
+  }
+}

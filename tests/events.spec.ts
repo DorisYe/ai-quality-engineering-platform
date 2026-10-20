@@ -2,27 +2,28 @@ import { test, expect, type APIRequestContext } from '@playwright/test';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { join } from 'node:path';
+import { randomUUID } from 'node:crypto';
 import { EventsPage } from '../pages/EventsPage';
 
 const execFileAsync = promisify(execFile);
-const appUrl = 'http://127.0.0.1:3100';
-
 type EventRecord = {
   id: string; type: string; severity: string; source: string;
   status: string; created_at: string;
 };
 
-async function generateFromPowerShell(source: string): Promise<void> {
-  if (process.platform !== 'win32') {
-    throw new Error('This exercise runs the Windows PowerShell event generator. Use Windows for TC-001.');
+async function generateFromScript(source: string): Promise<void> {
+  if (process.platform === 'win32') {
+    await execFileAsync('powershell.exe', [
+      '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
+      join(process.cwd(), 'scripts', 'generate-event.ps1'),
+      '-Type', 'StorageCapacityWarning', '-Severity', 'Warning', '-Source', source,
+    ], { timeout: 15000 });
+  } else {
+    await execFileAsync('bash', [
+      join(process.cwd(), 'scripts', 'generate-event.sh'),
+      'StorageCapacityWarning', 'Warning', source,
+    ], { timeout: 15000 });
   }
-  await execFileAsync('powershell.exe', [
-    '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
-    join(process.cwd(), 'scripts', 'generate-event.ps1'),
-    '-Type', 'StorageCapacityWarning',
-    '-Severity', 'Warning',
-    '-Source', source,
-  ], { timeout: 15000 });
 }
 
 async function createEvent(request: APIRequestContext, severity = 'Warning', source = 'AutomationTest'): Promise<EventRecord> {
@@ -33,11 +34,11 @@ async function createEvent(request: APIRequestContext, severity = 'Warning', sou
   return response.json() as Promise<EventRecord>;
 }
 
-test('TC-001: PowerShell event is processed and displayed in the UI', async ({ page, request }) => {
+test('TC-001: script-generated event is processed and displayed in the UI', async ({ page, request }) => {
   const dashboard = new EventsPage(page);
   await dashboard.open();
-  const source = 'Playwright-' + Date.now();
-  await generateFromPowerShell(source);
+  const source = 'Playwright-' + randomUUID();
+  await generateFromScript(source);
   // The script returns an event ID; look it up via the real backend API.
   let created: EventRecord | undefined;
   await expect.poll(async () => {
@@ -76,13 +77,15 @@ test('TC-003: UI acknowledgement updates backend status', async ({ page, request
 
 test('TC-004: severity and status filters show matching events', async ({ page, request }) => {
   const critical = await createEvent(request, 'Critical', 'FilterCritical');
-  await createEvent(request, 'Warning', 'FilterWarning');
+  const warning = await createEvent(request, 'Warning', 'FilterWarning');
   const dashboard = new EventsPage(page);
   await dashboard.open();
   await dashboard.expectEvent(critical.id);
+  await dashboard.expectEvent(warning.id);
   await dashboard.filterSeverity('Critical');
   await dashboard.filterStatus('Active');
   await expect(dashboard.row(critical.id)).toBeVisible();
+  await expect(dashboard.row(warning.id)).toHaveCount(0);
   const rows = dashboard.visibleRows;
   await expect.poll(() => rows.count()).toBeGreaterThan(0);
   const count = await rows.count();
@@ -90,10 +93,17 @@ test('TC-004: severity and status filters show matching events', async ({ page, 
     await expect(rows.nth(i).locator('td').nth(2)).toHaveText('Critical');
     await expect(rows.nth(i).locator('td').nth(4)).toHaveText('Active');
   }
+  // Verify the combined filter responds when an event changes status.
+  await dashboard.acknowledge(critical.id);
+  await expect(dashboard.row(critical.id)).toHaveCount(0);
+  await dashboard.filterStatus('Acknowledged');
+  await expect(dashboard.row(critical.id)).toBeVisible();
+  await expect(dashboard.row(critical.id).locator('td').nth(4)).toHaveText('Acknowledged');
+  await expect(dashboard.row(warning.id)).toHaveCount(0);
 });
 
 test('TC-005: invalid event payload is rejected without being stored', async ({ request }) => {
-  const uniqueSource = 'Invalid-' + Date.now();
+  const uniqueSource = 'Invalid-' + randomUUID();
   const response = await request.post('/api/events', {
     data: { type: 'BadEvent', severity: 'Unknown', source: uniqueSource },
   });

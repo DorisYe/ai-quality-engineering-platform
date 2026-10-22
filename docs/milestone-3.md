@@ -33,3 +33,21 @@ Portal endpoints: `GET /health`, `GET /api/test-cases` and `GET /api/test-cases/
 - **M3.5:** integration validation and review.
 
 Security: M3.1 does **not** accept commands, run subprocesses or expose a public network interface. Bind address is `127.0.0.1` only. Do not deploy this teaching portal as-is to an untrusted network.
+
+## M3.2: Run Selected / Run All (implemented; local acceptance pending)
+
+Restart the Portal after pulling code: `npm.cmd run portal`. Make sure the Event Monitoring AUT server at **3100 is stopped**, because the Playwright config starts its own AUT during execution. The optional Playwright HTML Report viewer may also be stopped before test runs to avoid confusion over report files.
+
+Select a test and press **Run Selected** or **Run All** on http://127.0.0.1:3200. The page polls `GET /api/runs/current` and shows live status and recent console output. Backend endpoint: `POST /api/runs` with JSON `{ "selection": "TC-003" }` or `{ "selection": "all" }`.
+
+Only five known IDs or `all` are accepted. No caller-supplied command arguments. Only one process at once. The server is bound to loopback, but this is a local demo and not an authenticated production service. Cross-site access requires further hardening before deployment.
+
+**Limitations:** execution state is in-memory and only the current run is visible. Detailed Playwright JSON result parsing, history persistence and dedicated evidence links are M3.3–M3.4. This implementation has not been run on the user's Windows machine yet.
+
+### M3.2 acceptance
+
+1. Stop port 3100 and refresh the portal on port 3200.
+2. Select TC-003 and click Run Selected; verify status transitions running → passed, and the output indicates one test passed.
+3. Click Run All; verify the output indicates five tests passed.
+4. While running, buttons are disabled; backend rejects concurrent requests with HTTP 409.
+5. Review the result after completion and verify unknown test IDs are rejected with HTTP 400 (optional API test).

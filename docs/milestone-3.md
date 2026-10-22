@@ -101,3 +101,25 @@ The Playwright config now records **failure-only screenshots**, **failure-only v
 6. Inspect `data/qa-results`: each run must have its own `run.json`, `results.json` and `report/index.html`.
 
 **Known limitations:** existing executions created before M3.4 have no run metadata/history folder, and won't automatically appear. History keeps run files indefinitely (disk cleanup/retention policy will follow). A successful run may have no screenshots/videos/traces. This version is unverified until user local acceptance.
+
+## M3.4 acceptance and M3.5 integration / evidence validation
+
+On 2026-10-21 the project owner reported **5/5 PASS** for M3.4 manual acceptance (see `docs/milestone-3-4-acceptance.md`).
+
+M3.5 adds a controlled, opt-in **Evidence Diagnostic (Expected Failure)** button. It selects `evidence-check`, which launches only `tests/evidence-diagnostic.spec.ts`. That test loads the AUT, records a deliberate attached screenshot, and intentionally fails an assertion so Playwright retains the failure screenshot, video, and trace. **A Failed status for this diagnostic is expected, not a product defect.**
+
+Normal Run Selected and Run All explicitly exclude this diagnostic file; the normal five business tests are unchanged.
+
+### Manual acceptance procedure
+
+1. Stop Port 3100 (AUT) and Port 3200 (old Portal), then `git pull origin feature/qa-portal-m3-1`.
+2. Run `node --check portal/server.js` and `node --check portal/test-runner.js`; restart `npm.cmd run portal` and open http://127.0.0.1:3200.
+3. Run All: expect 5 passed. This confirms the diagnostic is not part of normal regression.
+4. Click **Evidence Diagnostic (Expected Failure)**. The run should finish as **FAILED**, with one unexpected test; this result is intentional.
+5. In Execution History, select the diagnostic run. Verify HTML Report opens and Evidence links include PNG screenshot, WebM video and ZIP trace (depending on Playwright artifact generation).
+6. Restart Portal; verify both normal and diagnostic runs remain in history and their reports still open.
+7. Do not merge PR #3 until the local execution and links are verified.
+
+### Design notes
+
+Failure-only evidence remains the default for the normal suite. The diagnostic is intentionally separate from the five business test cases, so no false regression failures are introduced. HTML reports and evidence files remain inside their unique run folders. A future improvement is automated server-side integration testing of file serving, safer network exposure, and artifact retention/deletion policies.

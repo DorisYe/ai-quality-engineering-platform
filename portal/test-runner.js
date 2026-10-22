@@ -25,7 +25,7 @@ function launch(selection) {
   };
   current = run;
   const args = [playwrightCLI, 'test'];
-  if (selection !== 'all') args.push('--grep', '^' + selection.replace('-', '\\-') + ':');
+  if (selection !== 'all') args.push('--grep', selection + ':');
   // Playwright is always launched from a fixed CLI and a fixed allowlist. No shell is used.
   const proc = spawn(process.execPath, args, {
     cwd: root, shell: false, windowsHide: true,

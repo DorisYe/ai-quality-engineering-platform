@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
+  testMatch: process.env.QA_EVIDENCE_CHECK === '1' ? '**/evidence-diagnostic.spec.ts' : '**/events.spec.ts',
   ...(process.env.QA_RUN_ARTIFACT_DIR ? { outputDir: process.env.QA_RUN_ARTIFACT_DIR } : {}),
   timeout: 45000,
   expect: { timeout: 12000 },

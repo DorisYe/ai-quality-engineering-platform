@@ -2,14 +2,14 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quality Engineering Portal | Test Management</title>
 <style>
-:root{font-family:Inter,Segoe UI,Arial,sans-serif;background:#f4f7fb;color:#17263d}*{box-sizing:border-box}body{margin:0}header{background:#14243d;color:#fff;padding:22px 30px}header small{color:#abc1df;letter-spacing:.11em;text-transform:uppercase}header h1{margin:7px 0 3px;font-size:25px}header p{margin:0;color:#c3d0e0}.layout{max-width:1240px;margin:30px auto;padding:0 22px}.toolbar,.summary{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}.metric{background:#fff;border:1px solid #e1e7f0;border-radius:14px;padding:18px;flex:1;min-width:150px}.metric span{color:#60718a;font-size:12px}.metric strong{display:block;font-size:27px;margin-top:8px}.grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(300px,.85fr);gap:20px}.panel{background:#fff;border:1px solid #e1e7f0;border-radius:14px;padding:20px;box-shadow:0 5px 18px #15253a07}.panel h2{margin-top:0;font-size:19px}.case{width:100%;text-align:left;border:1px solid #e4e9f2;background:#fff;padding:14px;margin:7px 0;border-radius:10px;cursor:pointer;color:#16263e;display:flex;align-items:center;justify-content:space-between;gap:10px}.case:hover,.case.selected{border-color:#5281db;background:#f0f5ff}.case strong{display:block}.case small{display:block;margin-top:5px;color:#68788f}.tag{font-size:11px;border-radius:99px;padding:5px 9px;background:#eaf0fc;color:#28559a}.step{margin:12px 0;line-height:1.55}button,input{font:inherit}input{border:1px solid #cad4e2;border-radius:8px;padding:10px;width:240px;max-width:100%}.disabled{border:1px solid #d4dbe7;background:#eef2f7;padding:10px 14px;border-radius:8px;color:#69788e;cursor:not-allowed}.muted{color:#64748b;font-size:13px;line-height:1.6}.heading{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}@media(max-width:780px){.grid{grid-template-columns:1fr}header{padding:20px}.layout{padding:0 12px}}
+:root{font-family:Inter,Segoe UI,Arial,sans-serif;background:#f4f7fb;color:#17263d}*{box-sizing:border-box}body{margin:0}header{background:#14243d;color:#fff;padding:22px 30px}header small{color:#abc1df;letter-spacing:.11em;text-transform:uppercase}header h1{margin:7px 0 3px;font-size:25px}header p{margin:0;color:#c3d0e0}.layout{max-width:1240px;margin:30px auto;padding:0 22px}.toolbar,.summary{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}.metric{background:#fff;border:1px solid #e1e7f0;border-radius:14px;padding:18px;flex:1;min-width:150px}.metric span{color:#60718a;font-size:12px}.metric strong{display:block;font-size:27px;margin-top:8px}.grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(300px,.85fr);gap:20px}.panel{background:#fff;border:1px solid #e1e7f0;border-radius:14px;padding:20px;box-shadow:0 5px 18px #15253a07}.panel h2{margin-top:0;font-size:19px}.case{width:100%;text-align:left;border:1px solid #e4e9f2;background:#fff;padding:14px;margin:7px 0;border-radius:10px;cursor:pointer;color:#16263e;display:flex;align-items:center;justify-content:space-between;gap:10px}.case:hover,.case.selected{border-color:#5281db;background:#f0f5ff}.case strong{display:block}.case small{display:block;margin-top:5px;color:#68788f}.tag{font-size:11px;border-radius:99px;padding:5px 9px;background:#eaf0fc;color:#28559a}.step{margin:12px 0;line-height:1.55}button,input{font:inherit}.run{border:0;background:#2458a8;color:white;padding:11px 14px;border-radius:8px;cursor:pointer;margin-right:6px;margin-bottom:8px}.run:disabled{background:#b0bccd;cursor:not-allowed}.run-output{white-space:pre-wrap;overflow-wrap:anywhere;max-height:280px;overflow:auto;background:#111e32;color:#e6edf7;padding:13px;border-radius:10px;font:12px Consolas,monospace}input{border:1px solid #cad4e2;border-radius:8px;padding:10px;width:240px;max-width:100%}.disabled{border:1px solid #d4dbe7;background:#eef2f7;padding:10px 14px;border-radius:8px;color:#69788e;cursor:not-allowed}.muted{color:#64748b;font-size:13px;line-height:1.6}.heading{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}@media(max-width:780px){.grid{grid-template-columns:1fr}header{padding:20px}.layout{padding:0 12px}}
 </style></head><body>
 <header><small>AI-assisted quality engineering</small><h1>QA Management Portal</h1><p>Test inventory · Specifications · Automation readiness</p></header>
 <main class="layout">
-<div class="summary"><div class="metric"><span>Test Cases</span><strong id="count">—</strong></div><div class="metric"><span>Automated</span><strong id="automated">—</strong></div><div class="metric"><span>Current Phase</span><strong>M3.1</strong></div></div>
+<div class="summary"><div class="metric"><span>Test Cases</span><strong id="count">—</strong></div><div class="metric"><span>Automated</span><strong id="automated">—</strong></div><div class="metric"><span>Current Phase</span><strong>M3.2</strong></div></div>
 <div class="grid">
 <section class="panel"><div class="heading"><h2>Test Library</h2><input aria-label="Search test cases" id="search" placeholder="Search ID, title or category..."></div><p class="muted">Select a case to inspect its test steps and expected result.</p><div id="cases" aria-live="polite">Loading test cases...</div></section>
-<aside class="panel"><div class="heading"><h2>Test Specification</h2><span class="tag" id="priority">—</span></div><div id="details" aria-live="polite"><p class="muted">Select a case on the left to view its specification.</p></div><hr style="border:0;border-top:1px solid #e6eaf1;margin:22px 0"><h2>Test Execution</h2><button class="disabled" disabled title="Available in M3.2">Run Selected Test · Coming in M3.2</button><p class="muted">This release is read-only. M3.2 will connect an isolated test runner; no arbitrary commands are accepted from the browser.</p><p><a href="http://127.0.0.1:3100" target="_blank" rel="noopener noreferrer">Open Event Monitoring AUT ↗</a></p></aside>
+<aside class="panel"><div class="heading"><h2>Test Specification</h2><span class="tag" id="priority">—</span></div><div id="details" aria-live="polite"><p class="muted">Select a case on the left to view its specification.</p></div><hr style="border:0;border-top:1px solid #e6eaf1;margin:22px 0"><h2>Test Execution</h2><button class="run" id="run-selected" type="button">Run Selected</button><button class="run" id="run-all" type="button">Run All</button><p class="muted">The runner starts Playwright locally. Stop any existing AUT server on port 3100 before starting a run. Only one run is allowed at once.</p><p id="run-status" role="status">No execution started.</p><pre class="run-output" id="run-output" hidden></pre><p><a href="http://127.0.0.1:3100" target="_blank" rel="noopener noreferrer">Open Event Monitoring AUT ↗</a></p></aside>
 </div></main>
 <script>
 const list=document.getElementById('cases'),details=document.getElementById('details'),search=document.getElementById('search');
@@ -18,5 +18,34 @@ const element=(tag,text)=>{const node=document.createElement(tag);node.textConte
 function renderDetails(item){selected=item.id;document.getElementById('priority').textContent=item.priority+' priority';details.replaceChildren(element('h3',item.id+' — '+item.title),element('p','Category: '+item.category),element('h4','Test steps'));const ol=document.createElement('ol');for(const step of item.steps)ol.append(element('li',step));details.append(ol,element('h4','Expected result'),element('p',item.expected));renderList();}
 function renderList(){list.replaceChildren();const q=search.value.trim().toLowerCase();const found=cases.filter(c=>(c.id+' '+c.title+' '+c.category).toLowerCase().includes(q));if(!found.length){list.append(element('p','No matching test cases.'));return;}for(const item of found){const btn=document.createElement('button');btn.type='button';btn.className='case'+(selected===item.id?' selected':'');btn.setAttribute('aria-pressed',String(selected===item.id));const left=document.createElement('span');left.append(element('strong',item.id+' · '+item.title),element('small',item.category+' · Automated with Playwright'));btn.append(left,element('span','›'));btn.onclick=()=>renderDetails(item);list.append(btn);}}
 search.addEventListener('input',renderList);
+const runStatus=document.getElementById('run-status'),runOutput=document.getElementById('run-output');
+const selectedButton=document.getElementById('run-selected'),allButton=document.getElementById('run-all');
+let lastRunId=null;
+async function refreshRun(){
+ try{
+  const response=await fetch('/api/runs/current',{cache:'no-store'});
+  if(!response.ok)throw Error('HTTP '+response.status);
+  const {run}=await response.json();
+  if(!run)return;
+  const running=run.status==='running';
+  selectedButton.disabled=running;allButton.disabled=running;
+  runStatus.textContent='Run '+run.id.slice(0,8)+' · '+run.selection+' · '+run.status.toUpperCase()+(run.exitCode===null?'':' · Exit '+run.exitCode);
+  runOutput.hidden=false;runOutput.textContent=run.output||run.error||'Test process is starting...';
+  if(run.id!==lastRunId){lastRunId=run.id;}
+ }catch(e){runStatus.textContent='Unable to fetch run: '+e.message;}
+}
+async function startRun(selection){
+ selectedButton.disabled=true;allButton.disabled=true;
+ runStatus.textContent='Starting '+selection+'...';
+ try{
+  const response=await fetch('/api/runs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({selection})});
+  const body=await response.json();
+  if(!response.ok)throw Error(body.error||'HTTP '+response.status);
+  await refreshRun();
+ }catch(e){runStatus.textContent='Could not start run: '+e.message;await refreshRun();}
+}
+selectedButton.addEventListener('click',()=>startRun(selected));
+allButton.addEventListener('click',()=>startRun('all'));
+refreshRun();setInterval(refreshRun,1500);
 fetch('/api/test-cases').then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json()}).then(data=>{cases=data;document.getElementById('count').textContent=cases.length;document.getElementById('automated').textContent=cases.length;renderDetails(cases[0]);}).catch(e=>{list.textContent='Unable to load test specifications: '+e.message});
 </script></body></html>

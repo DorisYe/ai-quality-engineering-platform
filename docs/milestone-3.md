@@ -73,3 +73,31 @@ The Portal shows total, passed, failed, flaky and skipped counts, plus a per-tes
 5. Confirm the previous M3.2 live output still works. A Playwright execution failure should show a failed run and, when reporter output exists, structured failure results.
 
 **Known scope limits:** Only the most recent run is exposed by the Portal API, even though JSON files are kept locally. Historical API / persistent run metadata are part of M3.4. Automated execution of M3.3 has not yet been validated on the project owner's Windows installation.
+
+## M3.3 local acceptance — 2026-10-21
+
+Project owner reported **5/5 PASS**: selected and all-tests summaries, per-case details, retained console output and JSON output files. See `docs/milestone-3-3-acceptance.md`.
+
+## M3.4: Execution History, HTML Reports & Evidence (implementation pending local validation)
+
+- Every Portal-triggered test run now has a unique UUID and folder `data/qa-results/<run-id>/`.
+- `run.json` stores execution metadata and parsed results for display after the Portal restarts.
+- Each run keeps an independent `results.json`, `report/` HTML report and `artifacts/` Playwright test evidence.
+- `GET /api/runs` provides up to 100 recent saved executions, `GET /api/runs/:id` provides one run, and `GET /api/runs/:id/evidence` lists evidence.
+- The UI has an **Execution History** section; select a run to open its Playwright HTML Report or individual evidence files.
+- The browser receives only files from allowlisted local report and artifact directories. This is still a local-only demo without authentication.
+
+### Evidence strategy
+
+The Playwright config now records **failure-only screenshots**, **failure-only videos** and **failure-retained traces**. Therefore a successful test run often has **zero evidence files**; its HTML Report is still available. Evidence links should be tested with a controlled intentionally failing test in M3.5, not by damaging production-like test code.
+
+### M3.4 manual acceptance
+
+1. Stop the existing Portal server on port 3200 and the AUT on port 3100.
+2. Pull branch updates; start `npm.cmd run portal`; open http://127.0.0.1:3200.
+3. Run Selected TC-003, then Run All. Both should complete successfully and create two history entries.
+4. Select the older run and open its HTML Report. Verify it corresponds to one test rather than the newer full-suite run.
+5. Restart the Portal server: the two previous runs should remain visible in Execution History.
+6. Inspect `data/qa-results`: each run must have its own `run.json`, `results.json` and `report/index.html`.
+
+**Known limitations:** existing executions created before M3.4 have no run metadata/history folder, and won't automatically appear. History keeps run files indefinitely (disk cleanup/retention policy will follow). A successful run may have no screenshots/videos/traces. This version is unverified until user local acceptance.

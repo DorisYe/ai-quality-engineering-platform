@@ -18,7 +18,7 @@ app.get('/api/test-cases/:id', (req, res) => {
   return item ? res.json(item) : res.status(404).json({ error: 'Test case not found' });
 });
 app.get('/api/runs', (_req, res) => res.json({ runs: runner.list() }));
-app.get('/api/runs/:id', (req, res) => { const run = runner.read(req.params.id); return run ? res.json({run}) : res.status(404).json({error:'Run not found'}); });
+
 app.get('/api/runs/:id/evidence', (req, res) => res.json({evidence: runner.evidence(req.params.id)}));
 app.get(/^\\/api\\/runs\\/([0-9a-f-]+)\\/(report|evidence)\\/(.+)$/i, (req, res) => {
   const file = runner.artifactPath(req.params[0], req.params[1], req.params[2].split('/'));
@@ -28,6 +28,7 @@ app.get(/^\\/api\\/runs\\/([0-9a-f-]+)\\/(report|evidence)\\/(.+)$/i, (req, res)
   res.sendFile(file);
 });
 app.get('/api/runs/current', (_req, res) => res.json({ run: runner.snapshot() }));
+app.get('/api/runs/:id', (req, res) => { const run = runner.read(req.params.id); return run ? res.json({run}) : res.status(404).json({error:'Run not found'}); });
 app.post('/api/runs', (req, res) => {
   const selection = req.body && req.body.selection;
   const result = runner.launch(selection);

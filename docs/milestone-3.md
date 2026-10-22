@@ -57,3 +57,19 @@ Only five known IDs or `all` are accepted. No caller-supplied command arguments.
 The project owner confirmed all M3.2 manual acceptance checks passed in the local Windows environment after the Playwright `--grep` correction. This includes running a selected test and running the full suite through the Portal, with execution results displayed. This is user-reported manual acceptance, not independent CI verification.
 
 The AUT on port 3100 is started and stopped by the Playwright `webServer` configuration for each test invocation; the independent Portal on port 3200 remains available.
+
+## M3.3: Structured Playwright Results (implementation pending local acceptance)
+
+Playwright now writes one JSON reporter file per Portal-triggered run to `data/qa-results/<run-id>.json`. The Test Execution Service parses the JSON and exposes `summary` in `GET /api/runs/current`.
+
+The Portal shows total, passed, failed, flaky and skipped counts, plus a per-test status/duration table, alongside the existing console output. No new dependencies are required.
+
+### Local acceptance
+
+1. Stop Port 3200, then run `git pull origin feature/qa-portal-m3-1` and `npm.cmd run portal`.
+2. Leave Port 3100 stopped. Run Selected on TC-003 and check **Total: 1 · Passed: 1** and a TC-003 results row.
+3. Run All and check **Total: 5 · Passed: 5** and five results rows.
+4. Confirm that a new JSON file is saved inside `data/qa-results/`.
+5. Confirm the previous M3.2 live output still works. A Playwright execution failure should show a failed run and, when reporter output exists, structured failure results.
+
+**Known scope limits:** Only the most recent run is exposed by the Portal API, even though JSON files are kept locally. Historical API / persistent run metadata are part of M3.4. Automated execution of M3.3 has not yet been validated on the project owner's Windows installation.

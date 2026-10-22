@@ -1,0 +1,8 @@
+// Stable, allowlisted test metadata. No user-supplied commands are executed.
+module.exports = Object.freeze([
+  {id:'TC-001',title:'Event Generation and Display',category:'End-to-End',priority:'High',steps:['Generate an event using PowerShell or Bash','Query the backend for the new event','Verify the event appears in the dashboard'],expected:'Generated event is persisted and visible in the web UI.'},
+  {id:'TC-002',title:'Event Details Validation',category:'Integration',priority:'High',steps:['Create an event via API','Open the Event Monitoring dashboard','Compare the row values with the API response'],expected:'ID, type, severity, source and status agree with the backend.'},
+  {id:'TC-003',title:'Event Acknowledgement',category:'End-to-End',priority:'High',steps:['Create an Active event','Acknowledge it in the web dashboard','Query event status via API'],expected:'Status changes to Acknowledged in UI and backend.'},
+  {id:'TC-004',title:'Event Filtering',category:'Functional',priority:'Medium',steps:['Create Critical and Warning events','Filter by Critical and Active','Acknowledge the Critical event and switch status filter'],expected:'Only matching events are displayed throughout the workflow.'},
+  {id:'TC-005',title:'Invalid Event Handling',category:'Negative',priority:'High',steps:['Submit an event with an unsupported severity','Verify HTTP 400 response','Verify no matching event was persisted'],expected:'Invalid event is rejected and not saved.'}
+]);

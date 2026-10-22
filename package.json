@@ -8,7 +8,8 @@
     "dev": "node backend/server.js",
     "check": "node --check backend/server.js && node --check backend/database.js",
     "test": "playwright test",
-    "test:ui": "playwright test --ui"
+    "test:ui": "playwright test --ui",
+    "portal": "node portal/server.js"
   },
   "dependencies": {
     "express": "^4.21.2",

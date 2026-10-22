@@ -2,19 +2,21 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
+  ...(process.env.QA_RUN_ARTIFACT_DIR ? { outputDir: process.env.QA_RUN_ARTIFACT_DIR } : {}),
   timeout: 45000,
   expect: { timeout: 12000 },
   fullyParallel: false,
   workers: 1,
   reporter: [
     ['list'],
-    ['html', { open: 'never' }],
+    ['html', { open: 'never', ...(process.env.QA_RUN_REPORT_DIR ? { outputFolder: process.env.QA_RUN_REPORT_DIR } : {}) }],
     ...(process.env.QA_RUN_JSON ? [['json', { outputFile: process.env.QA_RUN_JSON }] as const] : []),
   ],
   use: {
     baseURL: 'http://127.0.0.1:3100',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
     ...devices['Desktop Chrome'],
   },
   webServer: {

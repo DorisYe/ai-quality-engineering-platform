@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('node:path');
 const cases = require('./test-cases');
 const runner = require('./test-runner');
+const { createDrafts } = require('./bug-drafts');
 const app = express();
 app.disable('x-powered-by');
 app.use(express.json({ limit: '4kb' }));
@@ -19,6 +20,11 @@ app.get('/api/test-cases/:id', (req, res) => {
 });
 app.get('/api/runs', (_req, res) => res.json({ runs: runner.list() }));
 
+app.get('/api/runs/:id/bug-drafts', (req, res) => {
+  const run = runner.read(req.params.id);
+  if (!run) return res.status(404).json({ error: 'Run not found' });
+  return res.json({ drafts: createDrafts(run, runner.evidence(req.params.id)) });
+});
 app.get('/api/runs/:id/evidence', (req, res) => res.json({evidence: runner.evidence(req.params.id)}));
 app.get(/^\/api\/runs\/([0-9a-f-]+)\/(report|evidence)\/(.+)$/i, (req, res) => {
   const file = runner.artifactPath(req.params[0], req.params[1], req.params[2].split('/'));
@@ -36,4 +42,4 @@ app.post('/api/runs', (req, res) => {
 });
 app.use(express.static(path.join(__dirname, 'public')));
 const port = Number(process.env.QA_PORT || 3200);
-app.listen(port, '127.0.0.1', () => console.log('QA Portal (M3.4) running at http://127.0.0.1:' + port));
+app.listen(port, '127.0.0.1', () => console.log('QA Portal (M4.1) running at http://127.0.0.1:' + port));

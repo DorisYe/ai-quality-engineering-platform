@@ -54,18 +54,19 @@ function evidence(id) {
 }
 function launch(selection) {
   if (current && current.status === 'running') return { error: 'A test run is already in progress', code: 409 };
-  if (selection !== 'all' && !knownIds.has(selection)) return { error: 'Unknown test case', code: 400 };
+  if (selection !== 'all' && selection !== 'evidence-check' && !knownIds.has(selection)) return { error: 'Unknown test case', code: 400 };
   const run = { id: crypto.randomUUID(), selection, status: 'running', startedAt: new Date().toISOString(), finishedAt: null, exitCode: null, output: '', error: null, summary: null };
   current = run;
   const folder = runDirectory(run.id);
   fs.mkdirSync(folder, { recursive: true });
   save(run);
   const args = [playwrightCLI, 'test'];
-  if (selection !== 'all') args.push('--grep', selection + ':');
+  if (selection !== 'all' && selection !== 'evidence-check') args.push('--grep', selection + ':');
   const proc = spawn(process.execPath, args, {
     cwd: root, shell: false, windowsHide: true,
     env: { ...process.env, CI: '1', FORCE_COLOR: '0',
       QA_RUN_JSON: path.join(folder, 'results.json'),
+      QA_EVIDENCE_CHECK: selection === 'evidence-check' ? '1' : '0',
       QA_RUN_REPORT_DIR: path.join(folder, 'report'),
       QA_RUN_ARTIFACT_DIR: path.join(folder, 'artifacts') },
     stdio: ['ignore', 'pipe', 'pipe']

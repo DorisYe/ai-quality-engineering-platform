@@ -51,3 +51,9 @@ Only five known IDs or `all` are accepted. No caller-supplied command arguments.
 3. Click Run All; verify the output indicates five tests passed.
 4. While running, buttons are disabled; backend rejects concurrent requests with HTTP 409.
 5. Review the result after completion and verify unknown test IDs are rejected with HTTP 400 (optional API test).
+
+## M3.2 user acceptance — 2026-10-21
+
+The project owner confirmed all M3.2 manual acceptance checks passed in the local Windows environment after the Playwright `--grep` correction. This includes running a selected test and running the full suite through the Portal, with execution results displayed. This is user-reported manual acceptance, not independent CI verification.
+
+The AUT on port 3100 is started and stopped by the Playwright `webServer` configuration for each test invocation; the independent Portal on port 3200 remains available.

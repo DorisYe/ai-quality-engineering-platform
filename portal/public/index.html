@@ -34,7 +34,28 @@ async function showAssets(id){
  if(draftResponse.ok){const {drafts}=await draftResponse.json();assetsEl.append(element('h3','Bug Drafts (review only)'));if(!drafts.length)assetsEl.append(element('p',run.selection==='evidence-check'?'Diagnostic failures are intentionally excluded.':'No unexpected test failures in this run.'));for(const draft of drafts){const section=document.createElement('section');section.className='panel';section.style.marginBottom='12px';section.append(element('h4',draft.title),element('p',draft.classification),element('p','Actual: '+draft.actualResult),element('p','Expected: '+draft.expectedResult));if(draft.triageSuggestion)section.append(element('p','Triage suggestion (rule-based, low confidence): '+draft.triageSuggestion.suggestedCategory+' — '+draft.triageSuggestion.rationale));const ol=document.createElement('ol');for(const step of draft.reproductionSteps)ol.append(element('li',step));section.append(element('strong','Review / reproduce before creating any issue'),ol);const copy=document.createElement('button');copy.className='run';copy.type='button';copy.textContent='Copy Bug Draft';copy.onclick=()=>navigator.clipboard.writeText([draft.title,draft.classification,'Expected: '+draft.expectedResult,'Actual: '+draft.actualResult,'Steps:',...draft.reproductionSteps.map((x,i)=>(i+1)+'. '+x),'Run: '+draft.runId].join('\\n'));section.append(copy);
 const aiButton=document.createElement('button');aiButton.className='run';aiButton.type='button';aiButton.textContent='Analyze with AI (opt-in)';
 const aiResult=element('p','AI does not run until clicked. Only test ID, title, expected and actual text are sent; no screenshots, videos or traces.');
-aiButton.onclick=async()=>{aiButton.disabled=true;aiResult.textContent='Analyzing selected failure...';try{const response=await fetch('/api/runs/'+id+'/bug-drafts/'+encodeURIComponent(draft.id)+'/ai-analysis',{method:'POST',headers:{'Content-Type':'application/json}',body:'{}'});const data=await response.json();if(!response.ok)throw Error(data.error||'HTTP '+response.status);const a=data.analysis;aiResult.textContent='AI hypothesis (unverified): '+a.hypothesis+' | Suggested category: '+a.suggestedCategory+' | Recommended check: '+a.nextCheck+' | Human review required. No review fields were changed.';}catch(e){aiResult.textContent='AI analysis unavailable: '+e.message;}finally{aiButton.disabled=false;}};
+aiButton.onclick=async()=>{
+ aiButton.disabled=true;
+ aiResult.textContent='Analyzing selected failure...';
+ try {
+  const response=await fetch('/api/runs/'+id+'/bug-drafts/'+encodeURIComponent(draft.id)+'/ai-analysis',{
+   method:'POST',
+   headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({})
+  });
+  const data=await response.json();
+  if(!response.ok)throw new Error(data.error||('HTTP '+response.status));
+  const analysis=data.analysis;
+  aiResult.textContent='AI hypothesis (unverified): '+analysis.hypothesis+
+   ' | Suggested category: '+analysis.suggestedCategory+
+   ' | Recommended check: '+analysis.nextCheck+
+   ' | Human review required. No review fields were changed.';
+ } catch(e) {
+  aiResult.textContent='AI analysis unavailable: '+e.message;
+ } finally {
+  aiButton.disabled=false;
+ }
+};
 section.append(aiButton,aiResult);
 const control=document.createElement('div');control.style.marginTop='12px';
 function picker(label,values,current){const wrap=document.createElement('label');wrap.style.display='inline-block';wrap.style.marginRight='12px';wrap.append(element('span',label+' '));const select=document.createElement('select');select.style.padding='7px';select.style.marginTop='5px';for(const value of values){const opt=document.createElement('option');opt.value=value;opt.textContent=value;select.append(opt);}select.value=current;wrap.append(select);control.append(wrap);return select;}

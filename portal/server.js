@@ -4,6 +4,8 @@ const cases = require('./test-cases');
 const runner = require('./test-runner');
 const { createStore } = require('./bug-review-store');
 const { suggest } = require('./failure-triage');
+const { analyze } = require('./ai-failure-analysis');
+const aiInProgress = new Set();
 const reviews = createStore(path.join(__dirname, '..', 'data', 'qa-results'));
 const app = express();
 app.disable('x-powered-by');
@@ -27,6 +29,22 @@ app.get('/api/runs/:id/bug-drafts', (req, res) => {
   if (!run) return res.status(404).json({ error: 'Run not found' });
   return res.json({ drafts: reviews.list(req.params.id, runner.read, runner.evidence).map(draft => ({ ...draft, triageSuggestion: suggest(draft) })) });
 });
+app.post('/api/runs/:id/bug-drafts/:draftId/ai-analysis', async (req, res) => {
+  const run = runner.read(req.params.id);
+  if (!run) return res.status(404).json({error:'Run not found'});
+  const draft = reviews.list(req.params.id, runner.read, runner.evidence).find(d => d.id === req.params.draftId);
+  if (!draft) return res.status(404).json({error:'Bug draft not found'});
+  if (!process.env.OPENAI_API_KEY) return res.status(503).json({error:'AI disabled: configure OPENAI_API_KEY locally'});
+  const key = req.params.id + ':' + req.params.draftId;
+  if (aiInProgress.has(key)) return res.status(409).json({error:'Analysis already in progress'});
+  aiInProgress.add(key);
+  try {
+    const analysis = await analyze(draft);
+    return res.json({analysis});
+  } catch (err) {
+    return res.status(502).json({error:err.name === 'AbortError'?'AI request timed out':err.message});
+  } finally { aiInProgress.delete(key); }
+});
 app.patch('/api/runs/:id/bug-drafts/:draftId', (req, res) => {
   const result = reviews.update(req.params.id, req.params.draftId, req.body, runner.read, runner.evidence);
   return result.error ? res.status(result.code).json({ error: result.error }) : res.json(result);
@@ -48,4 +66,4 @@ app.post('/api/runs', (req, res) => {
 });
 app.use(express.static(path.join(__dirname, 'public')));
 const port = Number(process.env.QA_PORT || 3200);
-app.listen(port, '127.0.0.1', () => console.log('QA Portal (M4.3) running at http://127.0.0.1:' + port));
+app.listen(port, '127.0.0.1', () => console.log('QA Portal (M4.3 AI) running at http://127.0.0.1:' + port));

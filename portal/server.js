@@ -2,12 +2,13 @@ const express = require('express');
 const path = require('node:path');
 const cases = require('./test-cases');
 const runner = require('./test-runner');
-const { createDrafts } = require('./bug-drafts');
+const { createStore } = require('./bug-review-store');
+const reviews = createStore(path.join(__dirname, '..', 'data', 'qa-results'));
 const app = express();
 app.disable('x-powered-by');
 app.use(express.json({ limit: '4kb' }));
 app.use((req, res, next) => {
-  if (req.method !== 'POST') return next();
+  if (!['POST', 'PATCH'].includes(req.method)) return next();
   const origin = req.headers.origin;
   if (origin && origin !== 'http://127.0.0.1:' + (process.env.QA_PORT || 3200)) return res.status(403).json({ error: 'Cross-origin requests are not allowed' });
   next();
@@ -23,7 +24,11 @@ app.get('/api/runs', (_req, res) => res.json({ runs: runner.list() }));
 app.get('/api/runs/:id/bug-drafts', (req, res) => {
   const run = runner.read(req.params.id);
   if (!run) return res.status(404).json({ error: 'Run not found' });
-  return res.json({ drafts: createDrafts(run, runner.evidence(req.params.id)) });
+  return res.json({ drafts: reviews.list(req.params.id, runner.read, runner.evidence) });
+});
+app.patch('/api/runs/:id/bug-drafts/:draftId', (req, res) => {
+  const result = reviews.update(req.params.id, req.params.draftId, req.body, runner.read, runner.evidence);
+  return result.error ? res.status(result.code).json({ error: result.error }) : res.json(result);
 });
 app.get('/api/runs/:id/evidence', (req, res) => res.json({evidence: runner.evidence(req.params.id)}));
 app.get(/^\/api\/runs\/([0-9a-f-]+)\/(report|evidence)\/(.+)$/i, (req, res) => {
@@ -42,4 +47,4 @@ app.post('/api/runs', (req, res) => {
 });
 app.use(express.static(path.join(__dirname, 'public')));
 const port = Number(process.env.QA_PORT || 3200);
-app.listen(port, '127.0.0.1', () => console.log('QA Portal (M4.1) running at http://127.0.0.1:' + port));
+app.listen(port, '127.0.0.1', () => console.log('QA Portal (M4.2) running at http://127.0.0.1:' + port));

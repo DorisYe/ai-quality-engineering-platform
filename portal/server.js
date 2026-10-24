@@ -3,6 +3,7 @@ const path = require('node:path');
 const cases = require('./test-cases');
 const runner = require('./test-runner');
 const { createStore } = require('./bug-review-store');
+const { suggest } = require('./failure-triage');
 const reviews = createStore(path.join(__dirname, '..', 'data', 'qa-results'));
 const app = express();
 app.disable('x-powered-by');
@@ -24,7 +25,7 @@ app.get('/api/runs', (_req, res) => res.json({ runs: runner.list() }));
 app.get('/api/runs/:id/bug-drafts', (req, res) => {
   const run = runner.read(req.params.id);
   if (!run) return res.status(404).json({ error: 'Run not found' });
-  return res.json({ drafts: reviews.list(req.params.id, runner.read, runner.evidence) });
+  return res.json({ drafts: reviews.list(req.params.id, runner.read, runner.evidence).map(draft => ({ ...draft, triageSuggestion: suggest(draft) })) });
 });
 app.patch('/api/runs/:id/bug-drafts/:draftId', (req, res) => {
   const result = reviews.update(req.params.id, req.params.draftId, req.body, runner.read, runner.evidence);
@@ -47,4 +48,4 @@ app.post('/api/runs', (req, res) => {
 });
 app.use(express.static(path.join(__dirname, 'public')));
 const port = Number(process.env.QA_PORT || 3200);
-app.listen(port, '127.0.0.1', () => console.log('QA Portal (M4.2) running at http://127.0.0.1:' + port));
+app.listen(port, '127.0.0.1', () => console.log('QA Portal (M4.3) running at http://127.0.0.1:' + port));

@@ -32,3 +32,7 @@ The fixture creates `data/qa-results/<uuid>/run.json` and a clearly labeled `fix
 You can use the fixture multiple times; the command creates a **new** UUID folder each time. When no longer needed, delete only the specific synthetic UUID directory named by the fixture script, after stopping the Portal. Never delete all of `data/qa-results`.
 
 The sample covers UI -> PATCH API -> review store -> disk -> reloaded UI. It does **not** verify the Playwright JSON parser on a real unexpected production failure or HTML evidence generation; those are already separately covered by M3 components.
+
+## Execution History inline expansion improvement
+
+Execution History now opens a run's HTML Report, evidence, and Bug Draft Review controls immediately **beneath the clicked history row** rather than at the bottom of the full list. Clicking the same row again collapses/reopens its details, and choosing a different row moves the expanded panel. Verify with multiple history items, including the synthetic fixture, and ensure Save Review still functions.

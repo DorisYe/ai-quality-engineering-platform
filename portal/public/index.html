@@ -46,7 +46,7 @@ aiButton.onclick=async()=>{
   const data=await response.json();
   if(!response.ok)throw new Error(data.error||('HTTP '+response.status));
   const analysis=data.analysis;
-  aiResult.textContent='AI hypothesis (unverified): '+analysis.hypothesis+
+  aiResult.textContent=(analysis.source==='mock'?'OFFLINE MOCK RESPONSE — NOT REAL AI ANALYSIS. ':'AI hypothesis (unverified): ')+analysis.hypothesis+
    ' | Suggested category: '+analysis.suggestedCategory+
    ' | Recommended check: '+analysis.nextCheck+
    ' | Human review required. No review fields were changed.';

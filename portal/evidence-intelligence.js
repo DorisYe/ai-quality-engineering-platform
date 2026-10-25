@@ -20,12 +20,12 @@ function correlateFailures(timeline) {
 }
 function extractTrace(zipPath) {
   const file = fs.readFileSync(zipPath);
-  if (file.length > MAX_ZIP) return {actions:[],timeline:[],completedEvents:0,failedEvents:0, traceEntries:0, beforeEvents:0, reason:'ZIP exceeds size limit'};
+  if (file.length > MAX_ZIP) return {actions:[],timeline:[],correlations:[],completedEvents:0,failedEvents:0,traceEntries:0,beforeEvents:0,reason:'ZIP exceeds size limit'};
   // Central directory supports ZIP data descriptors commonly used by Playwright.
   const min = Math.max(0, file.length - 65557);
   let eocd = -1;
   for(let i=file.length-22;i>=min;i--) if(file.readUInt32LE(i)===0x06054b50){eocd=i;break;}
-  if(eocd<0)return {actions:[], traceEntries:0, beforeEvents:0, reason:'ZIP directory not found'};
+  if(eocd<0)return {actions:[],timeline:[],correlations:[],completedEvents:0,failedEvents:0,traceEntries:0,beforeEvents:0,reason:'ZIP directory not found'};
   const entries=Math.min(file.readUInt16LE(eocd+10),200);
   let pos=file.readUInt32LE(eocd+16), total=0;
   const actions=[],timeline=[];

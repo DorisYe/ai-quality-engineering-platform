@@ -6,7 +6,7 @@ const { createStore } = require('./bug-review-store');
 const { suggest } = require('./failure-triage');
 const { analyze } = require('./ai-failure-analysis');
 const { mockAnalyze } = require('./mock-ai-analysis');
-const { preview, extractActions } = require('./evidence-intelligence');
+const { preview, extractTrace } = require('./evidence-intelligence');
 const aiInProgress = new Set();
 const reviews = createStore(path.join(__dirname, '..', 'data', 'qa-results'));
 const app = express();
@@ -59,9 +59,10 @@ app.get('/api/runs/:id/evidence-preview', (req,res) => {
  if(!run)return res.status(404).json({error:'Run not found'});
  const items=runner.evidence(req.params.id);
  const result=preview(run,items);
+ result.traceDiagnostics=[];
  for(const entry of items.filter(e=>e.name.toLowerCase().endsWith('.zip')).slice(0,2)) {
   const local=runner.artifactPath(req.params.id,'evidence',entry.name.split('/'));
-  if(local)result.actions.push(...extractActions(local));
+  if(local){const parsed=extractTrace(local);result.actions.push(...parsed.actions);result.traceDiagnostics.push({traceEntries:parsed.traceEntries,beforeEvents:parsed.beforeEvents,reason:parsed.reason});}
  }
  result.actions=result.actions.slice(0,40);
  return res.json({preview:result});

@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('node:path');
+const fs = require('node:fs');
 const cases = require('./test-cases');
 const runner = require('./test-runner');
 const { createStore } = require('./bug-review-store');
@@ -8,6 +9,7 @@ const { analyze } = require('./ai-failure-analysis');
 const { mockAnalyze } = require('./mock-ai-analysis');
 const { preview, extractTrace } = require('./evidence-intelligence');
 const { associateAssertion } = require('./assertion-trace-correlation');
+const { mapEvidence } = require('./test-evidence-map');
 const aiInProgress = new Set();
 const reviews = createStore(path.join(__dirname, '..', 'data', 'qa-results'));
 const app = express();
@@ -73,6 +75,13 @@ app.get('/api/runs/:id/evidence-preview', (req,res) => {
  result.failureCorrelations=result.failureCorrelations.slice(0,10);
  result.correlationStatus=result.failureCorrelations.length?'trace-errors-found':result.traceDiagnostics.some(d=>d.failedEvents>0)?'error-without-matched-action':'no-matched-trace-failure';
  result.assertionTrace=associateAssertion(run,parsedTraces);
+ try {
+  const dataRoot=path.join(__dirname,'..','data','qa-results',req.params.id);
+  const report=JSON.parse(fs.readFileSync(path.join(dataRoot,'results.json'),'utf8'));
+  result.testEvidenceMap=mapEvidence(report,items,path.join(dataRoot,'artifacts'));
+ } catch {
+  result.testEvidenceMap={mapped:[],unmapped:[],source:'playwright-json-reporter',mappingMethod:'attachment-path',verifiedOwnership:false,reason:'Reporter data unavailable (possibly an older or synthetic run)'};
+ }
  return res.json({preview:result});
 });
 app.get('/api/runs/:id/evidence', (req, res) => res.json({evidence: runner.evidence(req.params.id)}));

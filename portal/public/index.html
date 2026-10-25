@@ -41,6 +41,7 @@ async function showAssets(id){
    'Safe trace actions: '+JSON.stringify(info.actions,null,2)+'\n'+
    'Action timeline (safe metadata): '+JSON.stringify(info.timeline||[],null,2)+'\n'+
    'Failure correlations (unverified): '+JSON.stringify(info.failureCorrelations||[],null,2)+'\n'+
+   'Assertion-to-Trace assessment: '+JSON.stringify(info.assertionTrace||{},null,2)+'\n'+
    'Correlation status: '+info.correlationStatus+'\n'+
    'Trace parser diagnostics: '+JSON.stringify(info.traceDiagnostics||[],null,2)+'\n'+info.notes;
  }catch(e){previewOutput.textContent='Evidence preview unavailable: '+e.message;}finally{previewButton.disabled=false;}};

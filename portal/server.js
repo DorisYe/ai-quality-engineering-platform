@@ -12,6 +12,7 @@ const { associateAssertion } = require('./assertion-trace-correlation');
 const { mapEvidence } = require('./test-evidence-map');
 const { mapAttemptFailures } = require('./attempt-failure-map');
 const { selectMappedTraces } = require('./trace-selection');
+const { summarizeAttemptEvidence } = require('./verified-attempt-summary');
 const aiInProgress = new Set();
 const reviews = createStore(path.join(__dirname, '..', 'data', 'qa-results'));
 const app = express();
@@ -100,6 +101,7 @@ app.get('/api/runs/:id/evidence-preview', (req,res) => {
  result.correlationStatus=result.failureCorrelations.length?'trace-errors-found':result.traceDiagnostics.some(d=>d.failedEvents>0)?'error-without-matched-action':'no-matched-trace-failure';
  result.assertionTrace=associateAssertion(run,parsedTraces);
  result.traceSelectionPolicy='reporter-mapped-test-attempt-only';
+ result.verifiedAttemptSummary=summarizeAttemptEvidence(run,result.attemptFailures,result.perAttemptTraces);
  return res.json({preview:result});
 });
 app.get('/api/runs/:id/evidence', (req, res) => res.json({evidence: runner.evidence(req.params.id)}));

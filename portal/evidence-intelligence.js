@@ -18,16 +18,24 @@ function correlateFailures(timeline) {
   }
   return output;
 }
+function emptyTrace(reason) {return {actions:[],timeline:[],correlations:[],completedEvents:0,failedEvents:0,traceEntries:0,beforeEvents:0,reason};}
 function extractTrace(zipPath) {
-  const file = fs.readFileSync(zipPath);
+  let file;
+  try { const stat=fs.statSync(zipPath); if(stat.size>MAX_ZIP)return emptyTrace('ZIP exceeds size limit'); file=fs.readFileSync(zipPath); }
+  catch { return emptyTrace('ZIP unreadable'); }
   if (file.length > MAX_ZIP) return {actions:[],timeline:[],correlations:[],completedEvents:0,failedEvents:0,traceEntries:0,beforeEvents:0,reason:'ZIP exceeds size limit'};
   // Central directory supports ZIP data descriptors commonly used by Playwright.
   const min = Math.max(0, file.length - 65557);
   let eocd = -1;
   for(let i=file.length-22;i>=min;i--) if(file.readUInt32LE(i)===0x06054b50){eocd=i;break;}
   if(eocd<0)return {actions:[],timeline:[],correlations:[],completedEvents:0,failedEvents:0,traceEntries:0,beforeEvents:0,reason:'ZIP directory not found'};
-  const entries=Math.min(file.readUInt16LE(eocd+10),200);
-  let pos=file.readUInt32LE(eocd+16), total=0;
+  const declared=file.readUInt16LE(eocd+10);
+  const directorySize=file.readUInt32LE(eocd+12);
+  const directoryOffset=file.readUInt32LE(eocd+16);
+  if(declared===65535||directorySize===0xffffffff||directoryOffset===0xffffffff||declared>200)return emptyTrace('Unsupported ZIP directory');
+  if(directoryOffset>eocd||directorySize>eocd-directoryOffset)return emptyTrace('Invalid ZIP directory bounds');
+  const entries=declared;
+  let pos=directoryOffset, total=0;
   const actions=[],timeline=[];
   let traceEntries=0,beforeEvents=0,completedEvents=0,failedEvents=0;
   const pending=new Map();
@@ -38,18 +46,21 @@ function extractTrace(zipPath) {
     const uncomp=file.readUInt32LE(pos+24), nameLength=file.readUInt16LE(pos+28);
     const extra=file.readUInt16LE(pos+30), comment=file.readUInt16LE(pos+32);
     const offset=file.readUInt32LE(pos+42);
+    const next=pos+46+nameLength+extra+comment;
+    if(next>file.length||next>directoryOffset+directorySize)return emptyTrace('Invalid ZIP entry bounds');
     const name=file.subarray(pos+46,pos+46+nameLength).toString('utf8');
-    pos+=46+nameLength+extra+comment;
+    pos=next;
     if(!name.endsWith('.trace'))continue;
     traceEntries++;
     if(comp>2*1024*1024 || uncomp>2*1024*1024 || (method!==0&&method!==8))continue;
-    if(offset+30>file.length || file.readUInt32LE(offset)!==0x04034b50)continue;
+    if(offset>file.length-30 || file.readUInt32LE(offset)!==0x04034b50)continue;
     const start=offset+30+file.readUInt16LE(offset+26)+file.readUInt16LE(offset+28);
-    if(start+comp>file.length || total+uncomp>4*1024*1024)continue;
+    if(start>file.length||comp>file.length-start || total+uncomp>4*1024*1024)continue;
     try{
       const bytes=file.subarray(start,start+comp);
       const decoded=(method===8?zlib.inflateRawSync(bytes,{maxOutputLength:2*1024*1024}):bytes).toString('utf8');
-      total+=decoded.length;
+      if(Buffer.byteLength(decoded,'utf8')>uncomp+4||total+Buffer.byteLength(decoded,'utf8')>4*1024*1024)continue;
+      total+=Buffer.byteLength(decoded,'utf8');
       for(const line of decoded.split('\n')){
         // Keep inspecting events after reaching the action display limit.
         try{

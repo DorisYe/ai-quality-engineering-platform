@@ -5,6 +5,7 @@ const runner = require('./test-runner');
 const { createStore } = require('./bug-review-store');
 const { suggest } = require('./failure-triage');
 const { analyze } = require('./ai-failure-analysis');
+const { mockAnalyze } = require('./mock-ai-analysis');
 const aiInProgress = new Set();
 const reviews = createStore(path.join(__dirname, '..', 'data', 'qa-results'));
 const app = express();
@@ -34,6 +35,9 @@ app.post('/api/runs/:id/bug-drafts/:draftId/ai-analysis', async (req, res) => {
   if (!run) return res.status(404).json({error:'Run not found'});
   const draft = reviews.list(req.params.id, runner.read, runner.evidence).find(d => d.id === req.params.draftId);
   if (!draft) return res.status(404).json({error:'Bug draft not found'});
+  if (process.env.QA_AI_MOCK === '1' && run.selection === 'fixture-review') {
+    return res.json({ analysis: mockAnalyze(draft) });
+  }
   if (!process.env.OPENAI_API_KEY) return res.status(503).json({error:'AI disabled: configure OPENAI_API_KEY locally'});
   const key = req.params.id + ':' + req.params.draftId;
   if (aiInProgress.has(key)) return res.status(409).json({error:'Analysis already in progress'});

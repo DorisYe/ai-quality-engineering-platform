@@ -2,10 +2,13 @@ const path=require('node:path');
 function mapEvidence(report, evidence, artifactRoot) {
  const indexed=new Map((evidence||[]).map(e=>[String(e.name||'').replace(/\\/g,'/'),e]));
  const matches=[],unmapped=[];
+ let sequence=0;
  function walk(suites) {
   for(const suite of suites||[]){
    for(const spec of suite.specs||[]){
     for(const test of spec.tests||[]){
+     const testKey=typeof test.id==='string'&&test.id.length>0?'pw:'+test.id:'report-index:'+sequence;
+     sequence++;
      const match=(spec.title||'').match(/\b(TC-00[1-5]|DIAG-001)\b/);
      const testId=match?match[1]:null;
      const results=test.results||[];
@@ -15,8 +18,8 @@ function mapEvidence(report, evidence, artifactRoot) {
        const relative=path.relative(artifactRoot,path.resolve(attachment.path)).replace(/\\/g,'/');
        const safe=relative && !relative.startsWith('../') && relative!=='..' && !path.isAbsolute(relative);
        const file=safe?indexed.get(relative):null;
-       if(file)matches.push({testId,attempt:index,kind:typeof attachment.contentType==='string'&&attachment.contentType.startsWith('image/')?'screenshot':relative.endsWith('.zip')?'trace':relative.endsWith('.webm')?'video':'other',evidenceName:file.name,evidenceUrl:file.url,association:'playwright-json-attachment'});
-       else unmapped.push({testId,attempt:index,reason:'Attachment not found in approved artifacts'});
+       if(file)matches.push({testKey,testId,attempt:index,kind:typeof attachment.contentType==='string'&&attachment.contentType.startsWith('image/')?'screenshot':relative.endsWith('.zip')?'trace':relative.endsWith('.webm')?'video':'other',evidenceName:file.name,evidenceUrl:file.url,association:'playwright-json-attachment'});
+       else unmapped.push({testKey,testId,attempt:index,reason:'Attachment not found in approved artifacts'});
       }
      });
     }

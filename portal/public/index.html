@@ -44,6 +44,8 @@ async function showAssets(id){
    'Assertion-to-Trace assessment: '+JSON.stringify(info.assertionTrace||{},null,2)+'\n'+
    'Test-to-Evidence mapping: '+JSON.stringify(info.testEvidenceMap||{},null,2)+'\n'+
    'Test Attempt failure evidence: '+JSON.stringify(info.attemptFailures||{},null,2)+'\n'+
+   'Per-attempt trace selection: '+JSON.stringify(info.perAttemptTraces||[],null,2)+'\n'+
+   'Unmapped trace ZIP count: '+(info.unmappedTraceCount||0)+'\n'+
    'Correlation status: '+info.correlationStatus+'\n'+
    'Trace parser diagnostics: '+JSON.stringify(info.traceDiagnostics||[],null,2)+'\n'+info.notes;
  }catch(e){previewOutput.textContent='Evidence preview unavailable: '+e.message;}finally{previewButton.disabled=false;}};

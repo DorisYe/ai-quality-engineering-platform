@@ -21,7 +21,7 @@ test('trace ZIP with data descriptor flag extracts only allowlisted action names
  const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
  const {extractActions}=require('../portal/evidence-intelligence');
  const name=Buffer.from('test.trace');
- const body=Buffer.from(JSON.stringify({type:'before',apiName:'page.click',params:{selector:'SECRET'}})+'\\n'+JSON.stringify({type:'before',apiName:'malicious.secret'})+'\\n');
+ const body=Buffer.from(JSON.stringify({type:'before',apiName:'page.click',params:{selector:'SECRET'}})+'\n'+JSON.stringify({type:'before',apiName:'malicious.secret'})+'\n');
  const local=Buffer.alloc(30);local.writeUInt32LE(0x04034b50,0);local.writeUInt16LE(8,6);local.writeUInt16LE(name.length,26);
  const central=Buffer.alloc(46);central.writeUInt32LE(0x02014b50,0);central.writeUInt16LE(8,8);central.writeUInt32LE(body.length,20);central.writeUInt32LE(body.length,24);central.writeUInt16LE(name.length,28);
  const offset=local.length+name.length+body.length;

@@ -4,7 +4,7 @@ const zlib = require('node:zlib');
 const MAX_ZIP = 12 * 1024 * 1024;
 function extractTrace(zipPath) {
   const file = fs.readFileSync(zipPath);
-  if (file.length > MAX_ZIP) return {actions:[], traceEntries:0, beforeEvents:0, reason:'ZIP exceeds size limit'};
+  if (file.length > MAX_ZIP) return {actions:[],timeline:[],completedEvents:0,failedEvents:0, traceEntries:0, beforeEvents:0, reason:'ZIP exceeds size limit'};
   // Central directory supports ZIP data descriptors commonly used by Playwright.
   const min = Math.max(0, file.length - 65557);
   let eocd = -1;
@@ -12,8 +12,10 @@ function extractTrace(zipPath) {
   if(eocd<0)return {actions:[], traceEntries:0, beforeEvents:0, reason:'ZIP directory not found'};
   const entries=Math.min(file.readUInt16LE(eocd+10),200);
   let pos=file.readUInt32LE(eocd+16), total=0;
-  const actions=[];
-  let traceEntries=0,beforeEvents=0;
+  const actions=[],timeline=[];
+  let traceEntries=0,beforeEvents=0,completedEvents=0,failedEvents=0;
+  const pending=new Map();
+  const sanitizeTime=v=>Number.isFinite(v)&&v>=0&&v<1e15?Math.round(v):null;
   for(let i=0;i<entries && pos+46<=file.length;i++){
     if(file.readUInt32LE(pos)!==0x02014b50)break;
     const method=file.readUInt16LE(pos+10), comp=file.readUInt32LE(pos+20);
@@ -36,6 +38,15 @@ function extractTrace(zipPath) {
         if(actions.length>=40)break;
         try{
           const event=JSON.parse(line);
+          if(event.type==='after') {
+            completedEvents++;
+            const start=pending.get(event.callId);
+            if(start){pending.delete(event.callId);const end=sanitizeTime(event.endTime);
+              const durationMs=end!==null&&start.start!==null&&end>=start.start?Math.round(end-start.start):null;
+              const failed=Boolean(event.error);if(failed)failedEvents++;
+              if(timeline.length<40)timeline.push({action:start.action,durationMs,failed});
+            } else if(event.error) failedEvents++;
+          }
           if(event.type==='before') {
             beforeEvents++;
             // Playwright trace apiName may be e.g. "locator.click" or
@@ -45,13 +56,18 @@ function extractTrace(zipPath) {
             const method=typeof event.method==='string'?event.method:'';
             const candidate=raw || method;
             const match=candidate.match(/(?:^|\.)(click|dblclick|fill|press|check|uncheck|selectOption|goto|reload|waitFor|toBeVisible|toHaveText|screenshot|hover|type|focus|blur|tap|setInputFiles|navigate)$/i);
-            if(match && actions.length<40) actions.push({action:match[1]});
+            if(match) {
+              const action=match[1];
+              if(actions.length<40)actions.push({action});
+              if((typeof event.callId==='string'||typeof event.callId==='number')&&pending.size<250)
+                pending.set(event.callId,{action,start:sanitizeTime(event.startTime)});
+            }
           }
         }catch{}
       }
     }catch{}
   }
-  return {actions,traceEntries,beforeEvents,reason:actions.length?'actions found':traceEntries===0?'No .trace entry found':beforeEvents===0?'No before events decoded':'Before events had no allowlisted API names'};
+  return {actions,timeline,completedEvents,failedEvents,traceEntries,beforeEvents,reason:actions.length?'actions found':traceEntries===0?'No .trace entry found':beforeEvents===0?'No before events decoded':'Before events had no allowlisted API names'};
 }
 function extractActions(zipPath) { return extractTrace(zipPath).actions; }
 

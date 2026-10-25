@@ -60,11 +60,13 @@ app.get('/api/runs/:id/evidence-preview', (req,res) => {
  const items=runner.evidence(req.params.id);
  const result=preview(run,items);
  result.traceDiagnostics=[];
+ result.timeline=[];
  for(const entry of items.filter(e=>e.name.toLowerCase().endsWith('.zip')).slice(0,2)) {
   const local=runner.artifactPath(req.params.id,'evidence',entry.name.split('/'));
-  if(local){const parsed=extractTrace(local);result.actions.push(...parsed.actions);result.traceDiagnostics.push({traceEntries:parsed.traceEntries,beforeEvents:parsed.beforeEvents,reason:parsed.reason});}
+  if(local){const parsed=extractTrace(local);result.actions.push(...parsed.actions);result.timeline.push(...parsed.timeline);result.traceDiagnostics.push({traceEntries:parsed.traceEntries,beforeEvents:parsed.beforeEvents,completedEvents:parsed.completedEvents,failedEvents:parsed.failedEvents,reason:parsed.reason});}
  }
  result.actions=result.actions.slice(0,40);
+ result.timeline=result.timeline.slice(0,40);
  return res.json({preview:result});
 });
 app.get('/api/runs/:id/evidence', (req, res) => res.json({evidence: runner.evidence(req.params.id)}));

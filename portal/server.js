@@ -10,6 +10,7 @@ const { mockAnalyze } = require('./mock-ai-analysis');
 const { preview, extractTrace } = require('./evidence-intelligence');
 const { associateAssertion } = require('./assertion-trace-correlation');
 const { mapEvidence } = require('./test-evidence-map');
+const { mapAttemptFailures } = require('./attempt-failure-map');
 const aiInProgress = new Set();
 const reviews = createStore(path.join(__dirname, '..', 'data', 'qa-results'));
 const app = express();
@@ -79,8 +80,10 @@ app.get('/api/runs/:id/evidence-preview', (req,res) => {
   const dataRoot=path.join(__dirname,'..','data','qa-results',req.params.id);
   const report=JSON.parse(fs.readFileSync(path.join(dataRoot,'results.json'),'utf8'));
   result.testEvidenceMap=mapEvidence(report,items,path.join(dataRoot,'artifacts'));
+  result.attemptFailures=mapAttemptFailures(report,result.testEvidenceMap);
  } catch {
   result.testEvidenceMap={mapped:[],unmapped:[],source:'playwright-json-reporter',mappingMethod:'attachment-path',verifiedOwnership:false,reason:'Reporter data unavailable (possibly an older or synthetic run)'};
+  result.attemptFailures={source:'playwright-json-reporter',attempts:[],association:'unavailable',assertionCallIdMatched:false};
  }
  return res.json({preview:result});
 });

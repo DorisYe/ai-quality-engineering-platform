@@ -6,7 +6,7 @@ const reporter={suites:[{specs:[{title:'TC-001: acknowledgement',tests:[{results
  {status:'failed',error:{message:'SECRET token'},attachments:[{path:'/tmp/test.zip'}]},
  {status:'passed',attachments:[]}
 ]}]}]}]};
-const evidence={mapped:[{testId:'TC-001',attempt:0,kind:'trace',evidenceName:'attempt0/trace.zip',association:'playwright-json-attachment'}]};
+const evidence={mapped:[{testKey:'report-index:0',testId:'TC-001',attempt:0,kind:'trace',evidenceName:'attempt0/trace.zip',association:'playwright-json-attachment'}]};
 
 test('failed first attempt maps only its own trace and retry stays separate',()=>{
  const data=mapAttemptFailures(reporter,evidence);

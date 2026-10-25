@@ -7,6 +7,7 @@ const { suggest } = require('./failure-triage');
 const { analyze } = require('./ai-failure-analysis');
 const { mockAnalyze } = require('./mock-ai-analysis');
 const { preview, extractTrace } = require('./evidence-intelligence');
+const { associateAssertion } = require('./assertion-trace-correlation');
 const aiInProgress = new Set();
 const reviews = createStore(path.join(__dirname, '..', 'data', 'qa-results'));
 const app = express();
@@ -60,16 +61,18 @@ app.get('/api/runs/:id/evidence-preview', (req,res) => {
  const items=runner.evidence(req.params.id);
  const result=preview(run,items);
  result.traceDiagnostics=[];
+ const parsedTraces=[];
  result.timeline=[];
  result.failureCorrelations=[];
  for(const entry of items.filter(e=>e.name.toLowerCase().endsWith('.zip')).slice(0,2)) {
   const local=runner.artifactPath(req.params.id,'evidence',entry.name.split('/'));
-  if(local){const parsed=extractTrace(local);result.actions.push(...parsed.actions);result.timeline.push(...parsed.timeline);result.failureCorrelations.push(...parsed.correlations);result.traceDiagnostics.push({traceEntries:parsed.traceEntries,beforeEvents:parsed.beforeEvents,completedEvents:parsed.completedEvents,failedEvents:parsed.failedEvents,reason:parsed.reason});}
+  if(local){const parsed=extractTrace(local);parsedTraces.push(parsed);result.actions.push(...parsed.actions);result.timeline.push(...parsed.timeline);result.failureCorrelations.push(...parsed.correlations);result.traceDiagnostics.push({traceEntries:parsed.traceEntries,beforeEvents:parsed.beforeEvents,completedEvents:parsed.completedEvents,failedEvents:parsed.failedEvents,reason:parsed.reason});}
  }
  result.actions=result.actions.slice(0,40);
  result.timeline=result.timeline.slice(0,40);
  result.failureCorrelations=result.failureCorrelations.slice(0,10);
  result.correlationStatus=result.failureCorrelations.length?'trace-errors-found':result.traceDiagnostics.some(d=>d.failedEvents>0)?'error-without-matched-action':'no-matched-trace-failure';
+ result.assertionTrace=associateAssertion(run,parsedTraces);
  return res.json({preview:result});
 });
 app.get('/api/runs/:id/evidence', (req, res) => res.json({evidence: runner.evidence(req.params.id)}));

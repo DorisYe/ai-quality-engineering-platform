@@ -35,10 +35,10 @@ async function showAssets(id){
  previewButton.onclick=async()=>{previewButton.disabled=true;previewOutput.hidden=false;previewOutput.textContent='Reading local evidence metadata...';try{
   const response=await fetch('/api/runs/'+id+'/evidence-preview');
   const data=await response.json();if(!response.ok)throw Error(data.error||'HTTP '+response.status);
-  const info=data.preview;previewOutput.textContent='LOCAL ONLY — no AI/network upload\\n'+
-   'Screenshots: '+info.counts.screenshots+' | Videos: '+info.counts.videos+' | Traces: '+info.counts.traces+'\\n'+
-   'Test status metadata: '+JSON.stringify(info.tests,null,2)+'\\n'+
-   'Safe trace actions: '+JSON.stringify(info.actions,null,2)+'\\n'+info.notes;
+  const info=data.preview;previewOutput.textContent='LOCAL ONLY — no AI/network upload\n'+
+   'Screenshots: '+info.counts.screenshots+' | Videos: '+info.counts.videos+' | Traces: '+info.counts.traces+'\n'+
+   'Test status metadata: '+JSON.stringify(info.tests,null,2)+'\n'+
+   'Safe trace actions: '+JSON.stringify(info.actions,null,2)+'\n'+info.notes;
  }catch(e){previewOutput.textContent='Evidence preview unavailable: '+e.message;}finally{previewButton.disabled=false;}};
  assetsEl.append(previewButton,previewOutput);
  const draftResponse=await fetch('/api/runs/'+id+'/bug-drafts');

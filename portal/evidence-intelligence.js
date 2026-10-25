@@ -5,36 +5,40 @@ const MAX_ZIP = 12 * 1024 * 1024;
 function extractActions(zipPath) {
   const file = fs.readFileSync(zipPath);
   if (file.length > MAX_ZIP) return [];
-  // Walk ZIP local-file headers; Playwright normally writes trace entries with data descriptors,
-  // so this lightweight scanner intentionally skips unsupported archives.
-  const actions = [];
-  for (let i=0;i+30<file.length;) {
-    if (file.readUInt32LE(i)!==0x04034b50) { i++;continue; }
-    const flag=file.readUInt16LE(i+6), method=file.readUInt16LE(i+8);
-    const compressed=file.readUInt32LE(i+18), uncompressed=file.readUInt32LE(i+22);
-    const nameSize=file.readUInt16LE(i+26), extra=file.readUInt16LE(i+28);
-    const name=file.subarray(i+30,i+30+nameSize).toString('utf8');
-    const begin=i+30+nameSize+extra;
-    if (flag&8 || compressed>1024*1024 || uncompressed>1024*1024 || begin+compressed>file.length) { i=begin+Math.max(1,compressed);continue; }
-    if (name.endsWith('.trace') && (method===0||method===8)) {
-      try {
-        const bytes=file.subarray(begin,begin+compressed);
-        const decoded=(method===8?zlib.inflateRawSync(bytes,{maxOutputLength:1024*1024}):bytes).toString('utf8');
-        for(const line of decoded.split('\n')) {
-          if(actions.length>=40)break;
-          try {
-            const event=JSON.parse(line);
-            if(event.type==='before' && typeof event.apiName==='string') {
-              // Never include params, selectors, URLs, page text, network bodies or stack traces.
-              const apiName=event.apiName;
-              if (/^(page|locator|frame|browserContext|expect)\.[a-zA-Z]+$/.test(apiName))
-                actions.push({action:apiName});
-            }
-          }catch{}
-        }
-      }catch{}
-    }
-    i=begin+Math.max(1,compressed);
+  // Central directory supports ZIP data descriptors commonly used by Playwright.
+  const min = Math.max(0, file.length - 65557);
+  let eocd = -1;
+  for(let i=file.length-22;i>=min;i--) if(file.readUInt32LE(i)===0x06054b50){eocd=i;break;}
+  if(eocd<0)return [];
+  const entries=Math.min(file.readUInt16LE(eocd+10),200);
+  let pos=file.readUInt32LE(eocd+16), total=0;
+  const actions=[];
+  for(let i=0;i<entries && pos+46<=file.length;i++){
+    if(file.readUInt32LE(pos)!==0x02014b50)break;
+    const method=file.readUInt16LE(pos+10), comp=file.readUInt32LE(pos+20);
+    const uncomp=file.readUInt32LE(pos+24), nameLength=file.readUInt16LE(pos+28);
+    const extra=file.readUInt16LE(pos+30), comment=file.readUInt16LE(pos+32);
+    const offset=file.readUInt32LE(pos+42);
+    const name=file.subarray(pos+46,pos+46+nameLength).toString('utf8');
+    pos+=46+nameLength+extra+comment;
+    if(!name.endsWith('.trace') || comp>2*1024*1024 || uncomp>2*1024*1024 || (method!==0&&method!==8))continue;
+    if(offset+30>file.length || file.readUInt32LE(offset)!==0x04034b50)continue;
+    const start=offset+30+file.readUInt16LE(offset+26)+file.readUInt16LE(offset+28);
+    if(start+comp>file.length || total+uncomp>4*1024*1024)continue;
+    try{
+      const bytes=file.subarray(start,start+comp);
+      const decoded=(method===8?zlib.inflateRawSync(bytes,{maxOutputLength:2*1024*1024}):bytes).toString('utf8');
+      total+=decoded.length;
+      for(const line of decoded.split('\n')){
+        if(actions.length>=40)break;
+        try{
+          const event=JSON.parse(line);
+          if(event.type==='before' && typeof event.apiName==='string'
+            && /^(page|locator|frame|browserContext|expect)\.[a-zA-Z]+$/.test(event.apiName))
+            actions.push({action:event.apiName});
+        }catch{}
+      }
+    }catch{}
   }
   return actions;
 }

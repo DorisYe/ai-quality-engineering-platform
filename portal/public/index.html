@@ -37,6 +37,7 @@ async function showAssets(id){
   const data=await response.json();if(!response.ok)throw Error(data.error||'HTTP '+response.status);
   const info=data.preview;previewOutput.textContent='LOCAL ONLY — no AI/network upload\n'+
    'Screenshots: '+info.counts.screenshots+' | Videos: '+info.counts.videos+' | Traces: '+info.counts.traces+'\n'+
+   'M4.4.8 ATTEMPT EVIDENCE SUMMARY (no inferred root cause): '+JSON.stringify(info.verifiedAttemptSummary||{},null,2)+'\n'+
    'Test status metadata: '+JSON.stringify(info.tests,null,2)+'\n'+
    'Safe trace actions: '+JSON.stringify(info.actions,null,2)+'\n'+
    'Action timeline (safe metadata): '+JSON.stringify(info.timeline||[],null,2)+'\n'+

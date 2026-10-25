@@ -8,10 +8,10 @@ function mapAttemptFailures(report, evidenceMap) {
   for(const suite of suites||[]){
    for(const spec of suite.specs||[]){
     const match=(spec.title||'').match(/\b(TC-00[1-5]|DIAG-001)\b/);
-    if(!match)continue;
     for(const test of spec.tests||[]){
      const testKey=typeof test.id==='string'&&test.id.length>0?'pw:'+test.id:'report-index:'+sequence;
      sequence++;
+     if(!match)continue;
      (test.results||[]).forEach((result,index)=>{
       const status=['passed','failed','timedOut','skipped','interrupted'].includes(result.status)?result.status:'unknown';
       const evidence=mapped.filter(e=>e.testKey===testKey&&e.attempt===index);

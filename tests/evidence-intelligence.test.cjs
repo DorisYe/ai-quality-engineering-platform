@@ -16,3 +16,21 @@ test('limits test entries and strips unsafe IDs',()=>{
  assert.equal(data.tests[0].id,'TCscript');
  assert.equal(data.tests[0].durationMs,0);
 });
+
+test('trace ZIP with data descriptor flag extracts only allowlisted action names',()=>{
+ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
+ const {extractActions}=require('../portal/evidence-intelligence');
+ const name=Buffer.from('test.trace');
+ const body=Buffer.from(JSON.stringify({type:'before',apiName:'page.click',params:{selector:'SECRET'}})+'\\n'+JSON.stringify({type:'before',apiName:'malicious.secret'})+'\\n');
+ const local=Buffer.alloc(30);local.writeUInt32LE(0x04034b50,0);local.writeUInt16LE(8,6);local.writeUInt16LE(name.length,26);
+ const central=Buffer.alloc(46);central.writeUInt32LE(0x02014b50,0);central.writeUInt16LE(8,8);central.writeUInt32LE(body.length,20);central.writeUInt32LE(body.length,24);central.writeUInt16LE(name.length,28);
+ const offset=local.length+name.length+body.length;
+ const end=Buffer.alloc(22);end.writeUInt32LE(0x06054b50,0);end.writeUInt16LE(1,8);end.writeUInt16LE(1,10);end.writeUInt32LE(central.length+name.length,12);end.writeUInt32LE(offset,16);
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'trace-'));
+ const zip=path.join(dir,'sample.zip');
+ try{fs.writeFileSync(zip,Buffer.concat([local,name,body,central,name,end]));
+  const actions=extractActions(zip);
+  assert.deepEqual(actions,[{action:'page.click'}]);
+  assert.ok(!JSON.stringify(actions).includes('SECRET'));
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});

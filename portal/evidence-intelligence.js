@@ -38,8 +38,14 @@ function extractTrace(zipPath) {
           const event=JSON.parse(line);
           if(event.type==='before') {
             beforeEvents++;
-            if(typeof event.apiName==='string' && /^(page|locator|frame|browserContext|expect|Page|Locator|Frame|BrowserContext|Expect)\.[a-zA-Z]+$/.test(event.apiName))
-              actions.push({action:event.apiName});
+            // Playwright trace apiName may be e.g. "locator.click" or
+            // "expect.toBeVisible"; some versions put action metadata in method.
+            // Never send raw apiName, params, selector, or URL to browser.
+            const raw=typeof event.apiName==='string'?event.apiName:'';
+            const method=typeof event.method==='string'?event.method:'';
+            const candidate=raw || method;
+            const match=candidate.match(/(?:^|\.)(click|dblclick|fill|press|check|uncheck|selectOption|goto|reload|waitFor|toBeVisible|toHaveText|screenshot|hover|type|focus|blur|tap|setInputFiles|navigate)$/i);
+            if(match && actions.length<40) actions.push({action:match[1]});
           }
         }catch{}
       }

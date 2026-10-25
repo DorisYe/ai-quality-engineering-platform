@@ -39,6 +39,7 @@ async function showAssets(id){
    'Screenshots: '+info.counts.screenshots+' | Videos: '+info.counts.videos+' | Traces: '+info.counts.traces+'\n'+
    'Test status metadata: '+JSON.stringify(info.tests,null,2)+'\n'+
    'Safe trace actions: '+JSON.stringify(info.actions,null,2)+'\n'+
+   'Action timeline (safe metadata): '+JSON.stringify(info.timeline||[],null,2)+'\n'+
    'Trace parser diagnostics: '+JSON.stringify(info.traceDiagnostics||[],null,2)+'\n'+info.notes;
  }catch(e){previewOutput.textContent='Evidence preview unavailable: '+e.message;}finally{previewButton.disabled=false;}};
  assetsEl.append(previewButton,previewOutput);

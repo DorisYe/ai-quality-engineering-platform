@@ -11,6 +11,7 @@ const { preview, extractTrace } = require('./evidence-intelligence');
 const { associateAssertion } = require('./assertion-trace-correlation');
 const { mapEvidence } = require('./test-evidence-map');
 const { mapAttemptFailures } = require('./attempt-failure-map');
+const { selectMappedTraces } = require('./trace-selection');
 const aiInProgress = new Set();
 const reviews = createStore(path.join(__dirname, '..', 'data', 'qa-results'));
 const app = express();
@@ -76,11 +77,10 @@ app.get('/api/runs/:id/evidence-preview', (req,res) => {
   result.testEvidenceMap={mapped:[],unmapped:[],source:'playwright-json-reporter',mappingMethod:'attachment-path',verifiedOwnership:false,reason:'Reporter data unavailable (possibly an older or synthetic run)'};
   result.attemptFailures={source:'playwright-json-reporter',attempts:[],association:'unavailable',assertionCallIdMatched:false};
  }
- const owned=result.testEvidenceMap.mapped.filter(e=>e.kind==='trace'&&e.evidenceName.toLowerCase().endsWith('.zip'));
+ const selection=selectMappedTraces(result.testEvidenceMap,items);
  const parsedTraces=[];
- const unownedTraceCount=items.filter(e=>e.name.toLowerCase().endsWith('.zip')).length-new Set(owned.map(e=>e.evidenceName)).size;
- result.unmappedTraceCount=Math.max(0,unownedTraceCount);
- for(const link of owned.slice(0,10)) {
+ result.unmappedTraceCount=selection.unowned;
+ for(const link of selection.selected) {
   const local=runner.artifactPath(req.params.id,'evidence',link.evidenceName.split('/'));
   if(!local)continue;
   const parsed=extractTrace(local);

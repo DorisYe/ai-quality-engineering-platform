@@ -2,6 +2,22 @@ const fs = require('node:fs');
 const path = require('node:path');
 const zlib = require('node:zlib');
 const MAX_ZIP = 12 * 1024 * 1024;
+// Association is sequence-based only, not proof that a preceding action caused a failure.
+function correlateFailures(timeline) {
+  const items = Array.isArray(timeline) ? timeline : [];
+  const output = [];
+  for (let i = 0; i < items.length && output.length < 10; i++) {
+    if (items[i].failed !== true) continue;
+    output.push({
+      failedAction: items[i].action,
+      failedDurationMs: items[i].durationMs,
+      precedingActions: items.slice(Math.max(0, i - 3), i).map(x => x.action),
+      relation: 'preceded-in-trace',
+      conclusion: 'unverified'
+    });
+  }
+  return output;
+}
 function extractTrace(zipPath) {
   const file = fs.readFileSync(zipPath);
   if (file.length > MAX_ZIP) return {actions:[],timeline:[],completedEvents:0,failedEvents:0, traceEntries:0, beforeEvents:0, reason:'ZIP exceeds size limit'};
@@ -35,7 +51,7 @@ function extractTrace(zipPath) {
       const decoded=(method===8?zlib.inflateRawSync(bytes,{maxOutputLength:2*1024*1024}):bytes).toString('utf8');
       total+=decoded.length;
       for(const line of decoded.split('\n')){
-        if(actions.length>=40)break;
+        // Keep inspecting events after reaching the action display limit.
         try{
           const event=JSON.parse(line);
           if(event.type==='after') {
@@ -67,7 +83,7 @@ function extractTrace(zipPath) {
       }
     }catch{}
   }
-  return {actions,timeline,completedEvents,failedEvents,traceEntries,beforeEvents,reason:actions.length?'actions found':traceEntries===0?'No .trace entry found':beforeEvents===0?'No before events decoded':'Before events had no allowlisted API names'};
+  return {actions,timeline,correlations:correlateFailures(timeline),completedEvents,failedEvents,traceEntries,beforeEvents,reason:actions.length?'actions found':traceEntries===0?'No .trace entry found':beforeEvents===0?'No before events decoded':'Before events had no allowlisted API names'};
 }
 function extractActions(zipPath) { return extractTrace(zipPath).actions; }
 
@@ -81,4 +97,4 @@ function preview(run, evidence, zipReader=extractActions) {
   }));
   return { source:'local-evidence', uploaded:false, counts:{screenshots:count('.png'),videos:count('.webm'),traces:count('.zip')},tests, actions:[], notes:'Only allowlisted action names and status metadata are shown; no raw ZIP or sensitive logs are transmitted.' };
 }
-module.exports={extractActions,extractTrace,preview};
+module.exports={extractActions,extractTrace,correlateFailures,preview};

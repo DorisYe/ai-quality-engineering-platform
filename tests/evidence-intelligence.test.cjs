@@ -30,7 +30,7 @@ test('trace ZIP with data descriptor flag extracts only allowlisted action names
  const zip=path.join(dir,'sample.zip');
  try{fs.writeFileSync(zip,Buffer.concat([local,name,body,central,name,end]));
   const actions=extractActions(zip);
-  assert.deepEqual(actions,[{action:'page.click'},{action:'Page.goto'}]);
+  assert.deepEqual(actions,[{action:'click'},{action:'goto'}]);
   assert.ok(!JSON.stringify(actions).includes('SECRET'));
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });

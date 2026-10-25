@@ -38,7 +38,8 @@ async function showAssets(id){
   const info=data.preview;previewOutput.textContent='LOCAL ONLY — no AI/network upload\n'+
    'Screenshots: '+info.counts.screenshots+' | Videos: '+info.counts.videos+' | Traces: '+info.counts.traces+'\n'+
    'Test status metadata: '+JSON.stringify(info.tests,null,2)+'\n'+
-   'Safe trace actions: '+JSON.stringify(info.actions,null,2)+'\n'+info.notes;
+   'Safe trace actions: '+JSON.stringify(info.actions,null,2)+'\n'+
+   'Trace parser diagnostics: '+JSON.stringify(info.traceDiagnostics||[],null,2)+'\n'+info.notes;
  }catch(e){previewOutput.textContent='Evidence preview unavailable: '+e.message;}finally{previewButton.disabled=false;}};
  assetsEl.append(previewButton,previewOutput);
  const draftResponse=await fetch('/api/runs/'+id+'/bug-drafts');

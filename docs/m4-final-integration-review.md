@@ -1,6 +1,6 @@
 # M4 Final Integration Review & PR #4 Merge Preparation
 
-Date: 2026-10-26. **Review status: CONDITIONAL — final independent regression not run.** PR #4 stays **Draft** and is **not merged**.
+Date: 2026-10-26. **Review status: CONDITIONAL — final owner-run regression passed; merge authorization and repository checks outstanding.** PR #4 stays **Draft** and is **not merged**.
 
 ## Accepted evidence
 Owner reports M4 Evidence Analysis Dashboard **6/6 PASS**, including **50/50 local Node tests**, DIAG evidence count cards, attempt/evidence timeline, explicit unverified assertion and unconfirmed root cause, expandable diagnostics, and Run All / Bug Review / Mock AI regression. This report is based on user-performed Windows tests, not on independently reproduced execution here.
@@ -28,7 +28,7 @@ Previous M4.1–M4.4.7 checkpoints and reviews are retained in `docs/`.
 - [x] Readme project instructions updated.
 - [x] Known limits explicitly disclosed.
 - [x] `main` branch comparison shows no behind commits at snapshot.
-- [ ] Final independent CI or a fresh final local command: `node --test tests/*.test.cjs`.
+- [x] Fresh final local command: `node --test tests/*.test.cjs` — **50/50 PASS**, confirmed by project owner on 2026-10-26. This is owner-run, not independent CI.
 - [ ] Verify working tree contains no secrets or generated `data/qa-results` files staged for commit.
 - [ ] Check PR diff/files and any GitHub branch protection requirements before merging.
 - [ ] Explicit owner authorization for PR #4 merge.

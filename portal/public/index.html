@@ -3,14 +3,14 @@
 <title>Quality Engineering Portal | Test Management</title>
 <style>
 :root{font-family:Inter,Segoe UI,Arial,sans-serif;background:#f4f7fb;color:#17263d}*{box-sizing:border-box}body{margin:0}header{background:#14243d;color:#fff;padding:22px 30px}header small{color:#abc1df;letter-spacing:.11em;text-transform:uppercase}header h1{margin:7px 0 3px;font-size:25px}header p{margin:0;color:#c3d0e0}.layout{max-width:1240px;margin:30px auto;padding:0 22px}.toolbar,.summary{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}.metric{background:#fff;border:1px solid #e1e7f0;border-radius:14px;padding:18px;flex:1;min-width:150px}.metric span{color:#60718a;font-size:12px}.metric strong{display:block;font-size:27px;margin-top:8px}.grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(300px,.85fr);gap:20px}.panel{background:#fff;border:1px solid #e1e7f0;border-radius:14px;padding:20px;box-shadow:0 5px 18px #15253a07}.panel h2{margin-top:0;font-size:19px}.case{width:100%;text-align:left;border:1px solid #e4e9f2;background:#fff;padding:14px;margin:7px 0;border-radius:10px;cursor:pointer;color:#16263e;display:flex;align-items:center;justify-content:space-between;gap:10px}.case:hover,.case.selected{border-color:#5281db;background:#f0f5ff}.case strong{display:block}.case small{display:block;margin-top:5px;color:#68788f}.tag{font-size:11px;border-radius:99px;padding:5px 9px;background:#eaf0fc;color:#28559a}.step{margin:12px 0;line-height:1.55}button,input{font:inherit}.run{border:0;background:#2458a8;color:white;padding:11px 14px;border-radius:8px;cursor:pointer;margin-right:6px;margin-bottom:8px}.run:disabled{background:#b0bccd;cursor:not-allowed}.result-table{width:100%;border-collapse:collapse;font-size:12px}.result-table td,.result-table th{text-align:left;padding:9px;border-bottom:1px solid #e6edf5}.result-table td:nth-child(2){font-weight:700}.run-output{white-space:pre-wrap;overflow-wrap:anywhere;max-height:280px;overflow:auto;background:#111e32;color:#e6edf7;padding:13px;border-radius:10px;font:12px Consolas,monospace}input{border:1px solid #cad4e2;border-radius:8px;padding:10px;width:240px;max-width:100%}.disabled{border:1px solid #d4dbe7;background:#eef2f7;padding:10px 14px;border-radius:8px;color:#69788e;cursor:not-allowed}.muted{color:#64748b;font-size:13px;line-height:1.6}.heading{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}@media(max-width:780px){.grid{grid-template-columns:1fr}header{padding:20px}.layout{padding:0 12px}}
-</style></head><body>
+ .evidence-board{display:grid;gap:12px;margin:12px 0}.evidence-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:9px}.evidence-card{border:1px solid #dfe7f1;border-radius:10px;padding:12px;background:#f8fbff}.evidence-card strong{display:block;font-size:22px}.evidence-card small{color:#586b83}.evidence-section{border:1px solid #e0e6ee;border-radius:10px;padding:12px;background:white}.evidence-section h4{margin:0 0 10px}.evidence-line{padding:6px 0;border-bottom:1px solid #eef1f6;font-size:13px;overflow-wrap:anywhere}.evidence-line:last-child{border:0}.evidence-safe{font-size:12px;color:#4c6079}details.evidence-section summary{cursor:pointer;font-weight:600} </style></head><body>
 <header><small>AI-assisted quality engineering</small><h1>QA Management Portal</h1><p>Test inventory · Specifications · Automation readiness</p></header>
 <main class="layout">
-<div class="summary"><div class="metric"><span>Test Cases</span><strong id="count">—</strong></div><div class="metric"><span>Automated</span><strong id="automated">—</strong></div><div class="metric"><span>Current Phase</span><strong>M3.5</strong></div></div>
+<div class="summary"><div class="metric"><span>Test Cases</span><strong id="count">—</strong></div><div class="metric"><span>Automated</span><strong id="automated">—</strong></div><div class="metric"><span>Current Phase</span><strong>M4.4</strong></div></div>
 <div class="grid">
 <section class="panel"><div class="heading"><h2>Test Library</h2><input aria-label="Search test cases" id="search" placeholder="Search ID, title or category..."></div><p class="muted">Select a case to inspect its test steps and expected result.</p><div id="cases" aria-live="polite">Loading test cases...</div></section>
 <aside class="panel"><div class="heading"><h2>Test Specification</h2><span class="tag" id="priority">—</span></div><div id="details" aria-live="polite"><p class="muted">Select a case on the left to view its specification.</p></div><hr style="border:0;border-top:1px solid #e6eaf1;margin:22px 0"><h2>Test Execution</h2><button class="run" id="run-selected" type="button">Run Selected</button><button class="run" id="run-all" type="button">Run All</button><button class="run" id="run-diagnostic" type="button" style="background:#805019">Evidence Diagnostic (Expected Failure)</button><p class="muted">The runner starts Playwright locally. Stop any existing AUT server on port 3100 before starting a run. Only one run is allowed at once. The Evidence Diagnostic intentionally fails to test screenshots, video and traces.</p><p id="run-status" role="status">No execution started.</p><div id="result-summary" class="muted" aria-live="polite">Structured test results will appear after execution.</div><div style="overflow-x:auto"><table class="result-table" id="result-table" hidden><thead><tr><th>Test</th><th>Result</th><th>Duration</th></tr></thead><tbody id="result-rows"></tbody></table></div><pre class="run-output" id="run-output" hidden></pre><p><a href="http://127.0.0.1:3100" target="_blank" rel="noopener noreferrer">Open Event Monitoring AUT ↗</a></p></aside>
-</div><section class="panel" style="margin-top:20px"><h2>Execution History</h2><p class="muted">Each run keeps its own report and evidence. Select an execution to view details.</p><div id="history">No executions yet.</div><div id="run-assets" style="margin-top:14px"></div></section></main>
+</div><section class="panel" style="margin-top:20px"><h2>Execution History</h2><p class="muted">Each run keeps its own report and evidence. Select an execution to view details.</p><div id="history">No executions yet.</div></section></main>
 <script>
 const list=document.getElementById('cases'),details=document.getElementById('details'),search=document.getElementById('search');
 let cases=[],selected=null;
@@ -18,10 +18,91 @@ const element=(tag,text)=>{const node=document.createElement(tag);node.textConte
 function renderDetails(item){selected=item.id;document.getElementById('priority').textContent=item.priority+' priority';details.replaceChildren(element('h3',item.id+' — '+item.title),element('p','Category: '+item.category),element('h4','Test steps'));const ol=document.createElement('ol');for(const step of item.steps)ol.append(element('li',step));details.append(ol,element('h4','Expected result'),element('p',item.expected));renderList();}
 function renderList(){list.replaceChildren();const q=search.value.trim().toLowerCase();const found=cases.filter(c=>(c.id+' '+c.title+' '+c.category).toLowerCase().includes(q));if(!found.length){list.append(element('p','No matching test cases.'));return;}for(const item of found){const btn=document.createElement('button');btn.type='button';btn.className='case'+(selected===item.id?' selected':'');btn.setAttribute('aria-pressed',String(selected===item.id));const left=document.createElement('span');left.append(element('strong',item.id+' · '+item.title),element('small',item.category+' · Automated with Playwright'));btn.append(left,element('span','›'));btn.onclick=()=>renderDetails(item);list.append(btn);}}
 search.addEventListener('input',renderList);
-const historyEl=document.getElementById('history'),assetsEl=document.getElementById('run-assets');
+const historyEl=document.getElementById('history');
+let assetsEl=null;
 let selectedHistoryId=null,historySignature='';
-async function showAssets(id){selectedHistoryId=id;assetsEl.replaceChildren();try{const [detail,evidence]=await Promise.all([fetch('/api/runs/'+id).then(r=>r.json()),fetch('/api/runs/'+id+'/evidence').then(r=>r.json())]);const run=detail.run;if(!run)return;assetsEl.append(element('h3','Run '+id.slice(0,8)));if(run.reportUrl){const a=element('a','Open Playwright HTML Report ↗');a.href=run.reportUrl;a.target='_blank';a.rel='noopener noreferrer';assetsEl.append(a);}const files=evidence.evidence||[];assetsEl.append(element('p',files.length+' evidence file(s). Failure screenshots, videos and traces are retained when generated.'));for(const file of files){const p=document.createElement('p');const link=element('a',file.name);link.href=file.url;link.target='_blank';link.rel='noopener noreferrer';p.append(link);assetsEl.append(p);}}catch(err){assetsEl.append(element('p','Unable to load run evidence: '+err.message));}}
-async function refreshHistory(){try{const data=await fetch('/api/runs',{cache:'no-store'}).then(r=>r.json());const runs=data.runs||[];const signature=runs.map(r=>r.id+':'+r.status).join('|');if(signature===historySignature)return;historySignature=signature;historyEl.replaceChildren();if(!runs.length){historyEl.textContent='No executions yet.';return;}for(const run of runs){const b=document.createElement('button');b.type='button';b.className='case';b.textContent=new Date(run.startedAt).toLocaleString()+' · '+run.selection+' · '+run.status.toUpperCase()+(run.summary?' · '+run.summary.passed+'/'+run.summary.total+' passed':'');b.onclick=()=>showAssets(run.id);historyEl.append(b);}if(selectedHistoryId)showAssets(selectedHistoryId);}catch(err){historyEl.textContent='History unavailable: '+err.message;}}
+async function showAssets(id){
+ if(selectedHistoryId===id && assetsEl && assetsEl.dataset.loaded==='true'){assetsEl.hidden=!assetsEl.hidden;return;}
+ selectedHistoryId=id;
+ const old=historyEl.querySelector('.history-details');if(old)old.remove();
+ const row=Array.from(historyEl.children).find(node=>node.dataset.runId===id);
+ if(!row)return;
+ assetsEl=document.createElement('div');assetsEl.className='history-details';assetsEl.style.cssText='padding:15px;margin:-4px 0 12px;border:1px solid #d8e2f0;border-radius:10px;background:#f8faff;overflow-wrap:anywhere';
+ assetsEl.setAttribute('aria-live','polite');assetsEl.append(element('p','Loading execution details...'));row.after(assetsEl);
+ try{const [detail,evidence]=await Promise.all([fetch('/api/runs/'+id).then(r=>r.json()),fetch('/api/runs/'+id+'/evidence').then(r=>r.json())]);const run=detail.run;if(!run)return;assetsEl.replaceChildren();assetsEl.dataset.loaded='true';assetsEl.append(element('h3','Run '+id.slice(0,8)));if(run.selection==='fixture-review')assetsEl.append(element('p','SYNTHETIC FIXTURE — not a real Playwright failure or product defect. Used only to test Bug Draft Review.'));if(run.reportUrl){const a=element('a','Open Playwright HTML Report ↗');a.href=run.reportUrl;a.target='_blank';a.rel='noopener noreferrer';assetsEl.append(a);}const files=evidence.evidence||[];assetsEl.append(element('p',files.length+' evidence file(s). Failure screenshots, videos and traces are retained when generated.'));
+ function renderEvidenceBoard(info,mount){
+  const board=document.createElement('section');board.className='evidence-board';
+  const heading=element('p','LOCAL ONLY — no AI upload. Ownership is reporter-backed; root cause is not established.');heading.className='evidence-safe';board.append(heading);
+  const cards=document.createElement('div');cards.className='evidence-cards';
+  for(const [name,value] of [['Screenshots',info.counts?.screenshots||0],['Videos',info.counts?.videos||0],['Traces',info.counts?.traces||0],['Unmapped ZIP',info.unmappedTraceCount||0]]){
+   const card=document.createElement('div');card.className='evidence-card';card.append(element('strong',String(value)),element('small',name));cards.append(card);
+  }
+  board.append(cards);
+  const panel=(name,lines)=>{
+   const section=document.createElement('section');section.className='evidence-section';section.append(element('h4',name));
+   for(const line of lines.length?lines:['No matching evidence.']){const p=element('div',line);p.className='evidence-line';section.append(p);}
+   board.append(section);
+  };
+  const attempts=info.verifiedAttemptSummary?.attempts||[];
+  panel('Test attempts',attempts.map(a=>[a.testId||'Unknown','Attempt '+a.attempt,a.status||'unknown',a.evidenceOwnership||'unmapped','Traces: '+(a.traceCount||0)].join(' · ')));
+  const scopes=info.perAttemptTraces||[];
+  panel('Evidence and timeline',scopes.map(a=>{
+   const actions=(a.timeline||[]).map(x=>x.action+(x.failed?' (error)':'')+(x.durationMs===null?'':' · '+x.durationMs+'ms')).join(' → ');
+   return [a.testId||'Unknown','Attempt '+a.attempt,'Trace mapped',actions||'No allowlisted completed actions'].join(' | ');
+  }));
+  panel('Failure assessment',attempts.map(a=>[a.testId||'Unknown','Attempt '+a.attempt,'Reporter failure: '+(a.failureObserved?'yes':'no'),'Assertion link: unverified','Root cause: not established'].join(' · ')));
+  const advanced=document.createElement('details');advanced.className='evidence-section';advanced.append(element('summary','Technical diagnostics (safe metadata)'));
+  const pre=element('pre',JSON.stringify({testEvidenceMap:info.testEvidenceMap,attemptFailures:info.attemptFailures,perAttemptTraces:info.perAttemptTraces,assertionTrace:info.assertionTrace,traceDiagnostics:info.traceDiagnostics,correlationStatus:info.correlationStatus,traceSelectionPolicy:info.traceSelectionPolicy},null,2));
+  pre.className='run-output';advanced.append(pre);board.append(advanced);
+  mount.replaceChildren(board);
+ }
+ const previewButton=document.createElement('button');previewButton.className='run';previewButton.type='button';previewButton.textContent='Preview Local Evidence';
+ const previewOutput=document.createElement('div');previewOutput.hidden=true;
+ previewButton.onclick=async()=>{previewButton.disabled=true;previewOutput.hidden=false;previewOutput.replaceChildren(element('p','Reading local evidence metadata...'));try{
+  const response=await fetch('/api/runs/'+id+'/evidence-preview');
+  const data=await response.json();if(!response.ok)throw Error(data.error||'HTTP '+response.status);
+  renderEvidenceBoard(data.preview,previewOutput);
+ }catch(e){previewOutput.replaceChildren(element('p','Evidence preview unavailable: '+e.message));}finally{previewButton.disabled=false;}};
+ assetsEl.append(previewButton,previewOutput);
+ const draftResponse=await fetch('/api/runs/'+id+'/bug-drafts');
+ if(draftResponse.ok){const {drafts}=await draftResponse.json();assetsEl.append(element('h3','Bug Drafts (review only)'));if(!drafts.length)assetsEl.append(element('p',run.selection==='evidence-check'?'Diagnostic failures are intentionally excluded.':'No unexpected test failures in this run.'));for(const draft of drafts){const section=document.createElement('section');section.className='panel';section.style.marginBottom='12px';section.append(element('h4',draft.title),element('p',draft.classification),element('p','Actual: '+draft.actualResult),element('p','Expected: '+draft.expectedResult));if(draft.triageSuggestion)section.append(element('p','Triage suggestion (rule-based, low confidence): '+draft.triageSuggestion.suggestedCategory+' — '+draft.triageSuggestion.rationale));const ol=document.createElement('ol');for(const step of draft.reproductionSteps)ol.append(element('li',step));section.append(element('strong','Review / reproduce before creating any issue'),ol);const copy=document.createElement('button');copy.className='run';copy.type='button';copy.textContent='Copy Bug Draft';copy.onclick=()=>navigator.clipboard.writeText([draft.title,draft.classification,'Expected: '+draft.expectedResult,'Actual: '+draft.actualResult,'Steps:',...draft.reproductionSteps.map((x,i)=>(i+1)+'. '+x),'Run: '+draft.runId].join('\\n'));section.append(copy);
+const aiButton=document.createElement('button');aiButton.className='run';aiButton.type='button';aiButton.textContent='Analyze with AI (opt-in)';
+const aiResult=element('p','AI does not run until clicked. Only test ID, title, expected and actual text are sent; no screenshots, videos or traces.');
+aiButton.onclick=async()=>{
+ aiButton.disabled=true;
+ aiResult.textContent='Analyzing selected failure...';
+ try {
+  const response=await fetch('/api/runs/'+id+'/bug-drafts/'+encodeURIComponent(draft.id)+'/ai-analysis',{
+   method:'POST',
+   headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({})
+  });
+  const data=await response.json();
+  if(!response.ok)throw new Error(data.error||('HTTP '+response.status));
+  const analysis=data.analysis;
+  aiResult.textContent=(analysis.source==='mock'?'OFFLINE MOCK RESPONSE — NOT REAL AI ANALYSIS. ':'AI hypothesis (unverified): ')+analysis.hypothesis+
+   ' | Suggested category: '+analysis.suggestedCategory+
+   ' | Recommended check: '+analysis.nextCheck+
+   ' | Human review required. No review fields were changed.';
+ } catch(e) {
+  aiResult.textContent='AI analysis unavailable: '+e.message;
+ } finally {
+  aiButton.disabled=false;
+ }
+};
+section.append(aiButton,aiResult);
+const control=document.createElement('div');control.style.marginTop='12px';
+function picker(label,values,current){const wrap=document.createElement('label');wrap.style.display='inline-block';wrap.style.marginRight='12px';wrap.append(element('span',label+' '));const select=document.createElement('select');select.style.padding='7px';select.style.marginTop='5px';for(const value of values){const opt=document.createElement('option');opt.value=value;opt.textContent=value;select.append(opt);}select.value=current;wrap.append(select);control.append(wrap);return select;}
+const category=picker('Classification',['Unclassified test failure','Product defect','Test automation issue','Environment issue','Flaky test','Other'],draft.category);
+const priority=picker('Priority',['Unassigned','Low','Medium','High','Critical'],draft.priority);
+const status=picker('Review status',['draft','in_review','approved','rejected'],draft.state);
+const notes=document.createElement('textarea');notes.placeholder='QA review notes (required for approval)';notes.value=draft.reviewNotes||'';notes.maxLength=2000;notes.style.cssText='display:block;width:100%;padding:9px;margin:10px 0;min-height:70px';
+control.append(notes);
+const save=document.createElement('button');save.type='button';save.className='run';save.textContent='Save Review';
+const feedback=element('p','');feedback.setAttribute('role','status');
+save.onclick=async()=>{save.disabled=true;try{const response=await fetch('/api/runs/'+id+'/bug-drafts/'+encodeURIComponent(draft.id),{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({category:category.value,priority:priority.value,state:status.value,reviewNotes:notes.value})});const body=await response.json();if(!response.ok)throw Error(body.error||'HTTP '+response.status);feedback.textContent='Review saved · '+body.draft.state;}catch(e){feedback.textContent='Unable to save: '+e.message;}finally{save.disabled=false;}};
+control.append(save,feedback);section.append(control);assetsEl.append(section);}}for(const file of files){const p=document.createElement('p');const link=element('a',file.name);link.href=file.url;link.target='_blank';link.rel='noopener noreferrer';p.append(link);assetsEl.append(p);}}catch(err){assetsEl.append(element('p','Unable to load run evidence: '+err.message));}}
+async function refreshHistory(){try{const data=await fetch('/api/runs',{cache:'no-store'}).then(r=>r.json());const runs=data.runs||[];const signature=runs.map(r=>r.id+':'+r.status).join('|');if(signature===historySignature)return;historySignature=signature;historyEl.replaceChildren();if(!runs.length){historyEl.textContent='No executions yet.';return;}for(const run of runs){const b=document.createElement('button');b.type='button';b.className='case';b.textContent=new Date(run.startedAt).toLocaleString()+' · '+run.selection+' · '+run.status.toUpperCase()+(run.summary?' · '+run.summary.passed+'/'+run.summary.total+' passed':'');b.dataset.runId=run.id;b.onclick=()=>showAssets(run.id);historyEl.append(b);}if(selectedHistoryId && runs.some(r=>r.id===selectedHistoryId)){const id=selectedHistoryId;selectedHistoryId=null;showAssets(id);}}catch(err){historyEl.textContent='History unavailable: '+err.message;}}
 const runStatus=document.getElementById('run-status'),runOutput=document.getElementById('run-output');
 const selectedButton=document.getElementById('run-selected'),allButton=document.getElementById('run-all'),diagnosticButton=document.getElementById('run-diagnostic');
 let lastRunId=null;

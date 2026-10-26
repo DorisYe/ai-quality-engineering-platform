@@ -1,0 +1,68 @@
+name: M5 Quality Gates
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: m5-quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-gate:
+    name: Quality Gate / Unit + Playwright
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: "1"
+      QA_EVIDENCE_CHECK: "0"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install dependencies
+        run: npm install --no-package-lock --no-audit --no-fund
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Static checks
+        run: npm run check
+      - name: Unit and regression tests
+        run: |
+          mkdir -p ci-artifacts
+          set -o pipefail
+          node --test tests/*.test.cjs 2>&1 | tee ci-artifacts/unit-test-output.txt
+      - name: Playwright functional regression
+        env:
+          QA_RUN_JSON: ci-artifacts/playwright-results.json
+        run: npx playwright test
+      - name: Publish Playwright summary
+        if: always()
+        run: node scripts/ci-test-summary.cjs ci-artifacts/playwright-results.json
+      - name: Upload CI reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m5-ci-test-reports
+          path: |
+            ci-artifacts/
+            playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore
+      - name: Upload Playwright failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-quality-gate-failure
+          path: |
+            test-results/
+          retention-days: 7
+          if-no-files-found: ignore

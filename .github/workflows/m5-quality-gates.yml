@@ -36,16 +36,33 @@ jobs:
       - name: Static checks
         run: npm run check
       - name: Unit and regression tests
-        run: node --test tests/*.test.cjs
+        run: |
+          mkdir -p ci-artifacts
+          set -o pipefail
+          node --test tests/*.test.cjs 2>&1 | tee ci-artifacts/unit-test-output.txt
       - name: Playwright functional regression
+        env:
+          QA_RUN_JSON: ci-artifacts/playwright-results.json
         run: npx playwright test
-      - name: Upload Playwright report on failure
+      - name: Publish Playwright summary
+        if: always()
+        run: node scripts/ci-test-summary.cjs ci-artifacts/playwright-results.json
+      - name: Upload CI reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m5-ci-test-reports
+          path: |
+            ci-artifacts/
+            playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore
+      - name: Upload Playwright failure evidence
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-quality-gate-failure
           path: |
-            playwright-report/
             test-results/
           retention-days: 7
           if-no-files-found: ignore

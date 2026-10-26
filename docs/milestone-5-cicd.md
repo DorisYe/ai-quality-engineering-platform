@@ -27,8 +27,19 @@ PR check status alone does not enforce branch protection. To prevent merging fai
 - Failure artifacts/diagnostics are retained appropriately.
 
 ## Next increments
-M5.2: consistent artifact collection and test report summary.
+M5.2: CI artifact collection and test report summary **implemented, pending GitHub Actions acceptance**. Every run uploads `m5-ci-test-reports` (Node test log, Playwright JSON/HTML where available), produces an Actions step summary, and failed runs additionally upload `playwright-quality-gate-failure` containing `test-results/` (screenshots, video and traces where retained). Four unit tests cover summary aggregation, empty input and safe output.
 M5.3: scripted quality threshold policy, quality gate tests, and GitHub summary.
 M5.4: branch protection instructions, final README and acceptance.
 
 **No external AI provider or API key is necessary.**
+
+
+## M5.2 Acceptance checklist (pending)
+1. Open PR #5 → Checks → M5 Quality Gates → Summary; verify Playwright counts and total.
+2. Download `m5-ci-test-reports`; confirm unit log, JSON and HTML report are present after successful execution.
+3. Confirm an intentional E2E failure uploads `playwright-quality-gate-failure` with available screenshots, videos or trace ZIPs; do not introduce a failing test into main.
+4. Confirm no raw stack traces or secrets appear in the Step Summary.
+5. Check `node --test tests/*.test.cjs` passes (expected 54 tests, based on owner-reported M4 50 plus four new cases).
+6. Confirm DIAG-001 remains excluded from the default Playwright CI suite.
+
+**Note:** M5.2 has been committed to Draft PR #5; CI run results have not been verified in this session.

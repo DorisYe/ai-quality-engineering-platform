@@ -2,26 +2,214 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quality Engineering Portal | Test Management</title>
 <style>
-:root{font-family:Inter,Segoe UI,Arial,sans-serif;background:#f4f7fb;color:#17263d}*{box-sizing:border-box}body{margin:0}header{background:#14243d;color:#fff;padding:22px 30px}header small{color:#abc1df;letter-spacing:.11em;text-transform:uppercase}header h1{margin:7px 0 3px;font-size:25px}header p{margin:0;color:#c3d0e0}.layout{max-width:1240px;margin:30px auto;padding:0 22px}.toolbar,.summary{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}.metric{background:#fff;border:1px solid #e1e7f0;border-radius:14px;padding:18px;flex:1;min-width:150px}.metric span{color:#60718a;font-size:12px}.metric strong{display:block;font-size:27px;margin-top:8px}.grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(300px,.85fr);gap:20px}.panel{background:#fff;border:1px solid #e1e7f0;border-radius:14px;padding:20px;box-shadow:0 5px 18px #15253a07}.panel h2{margin-top:0;font-size:19px}.case{width:100%;text-align:left;border:1px solid #e4e9f2;background:#fff;padding:14px;margin:7px 0;border-radius:10px;cursor:pointer;color:#16263e;display:flex;align-items:center;justify-content:space-between;gap:10px}.case:hover,.case.selected{border-color:#5281db;background:#f0f5ff}.case strong{display:block}.case small{display:block;margin-top:5px;color:#68788f}.tag{font-size:11px;border-radius:99px;padding:5px 9px;background:#eaf0fc;color:#28559a}.step{margin:12px 0;line-height:1.55}button,input{font:inherit}.run{border:0;background:#2458a8;color:white;padding:11px 14px;border-radius:8px;cursor:pointer;margin-right:6px;margin-bottom:8px}.run:disabled{background:#b0bccd;cursor:not-allowed}.result-table{width:100%;border-collapse:collapse;font-size:12px}.result-table td,.result-table th{text-align:left;padding:9px;border-bottom:1px solid #e6edf5}.result-table td:nth-child(2){font-weight:700}.run-output{white-space:pre-wrap;overflow-wrap:anywhere;max-height:280px;overflow:auto;background:#111e32;color:#e6edf7;padding:13px;border-radius:10px;font:12px Consolas,monospace}input{border:1px solid #cad4e2;border-radius:8px;padding:10px;width:240px;max-width:100%}.disabled{border:1px solid #d4dbe7;background:#eef2f7;padding:10px 14px;border-radius:8px;color:#69788e;cursor:not-allowed}.muted{color:#64748b;font-size:13px;line-height:1.6}.heading{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}@media(max-width:780px){.grid{grid-template-columns:1fr}header{padding:20px}.layout{padding:0 12px}}
+:root{font-family:Inter,"Segoe UI",Arial,sans-serif;color:#23354d;background:#f5f7fb;font-synthesis:none}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0}button,input{font:inherit}button{cursor:pointer}
+:focus-visible{outline:3px solid #9abdf7;outline-offset:2px}
+.app-shell{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
+.sidebar{background:#fff;border-right:1px solid #e4eaf2;padding:26px 15px;display:flex;flex-direction:column;gap:30px}
+.brand{display:flex;align-items:center;gap:11px;padding:0 9px}.brand-mark{background:#e9f1ff;color:#3d6fc3;border-radius:12px;padding:10px;font-size:18px;font-weight:800}
+.brand strong{display:block;font-size:14px}.brand small{display:block;color:#8a97aa;font-size:11px;margin-top:3px}
+.nav{display:flex;flex-direction:column;gap:6px}.nav a{color:#667890;text-decoration:none;display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:10px;font-size:13px;font-weight:600}
+.nav a:hover,.nav a.active{background:#eaf1ff;color:#3067bc}.nav a.active{box-shadow:inset 3px 0 #497bd5}
+.sidebar-note{margin-top:auto;background:#f5f8fc;color:#73849b;padding:12px;border-radius:11px;font-size:11px;line-height:1.6}
+.workspace{min-width:0}.topbar{background:#fff;border-bottom:1px solid #e5eaf2;padding:22px 32px}.topbar small{color:#8190a5;text-transform:uppercase;letter-spacing:.12em;font-size:10px;font-weight:700}
+.topbar h1{margin:5px 0;font-size:24px;letter-spacing:-.035em}.topbar p{margin:0;color:#7d8ba0;font-size:12px}
+.layout{max-width:1360px;margin:0 auto;padding:26px 30px 56px}.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin-bottom:22px}
+.metric{background:#fff;border:1px solid #e5eaf2;border-radius:15px;padding:20px;box-shadow:0 4px 18px #17263d06}
+.metric span{color:#8290a5;font-size:12px}.metric strong{display:block;font-size:25px;margin-top:8px;letter-spacing:-.035em}
+.full-width-panel{margin-top:20px;min-width:0}.grid{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(340px,.88fr);gap:20px;align-items:start}.panel{background:#fff;border:1px solid #e5eaf2;border-radius:16px;padding:21px;box-shadow:0 5px 20px #15253a08;scroll-margin-top:22px}
+.panel h2{font-size:18px;margin:0 0 12px;letter-spacing:-.025em}.panel h3{font-size:15px}.panel h4{font-size:13px}.heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.case{width:100%;text-align:left;border:1px solid #e4e9f2;background:#fff;padding:14px;margin:8px 0;border-radius:11px;color:#23354d;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.case:hover,.case.selected{border-color:#a8c3ed;background:#f1f6ff}.case strong{display:block;font-size:13px}.case small{display:block;margin-top:6px;color:#8190a3;font-size:11px}
+.tag{font-size:11px;border-radius:99px;padding:5px 9px;background:#eaf1ff;color:#386ab5;font-weight:600}.step{margin:12px 0;line-height:1.55}
+.run{border:0;background:#4776d0;color:#fff;padding:11px 15px;border-radius:9px;font-weight:600;font-size:12px;margin:3px 6px 6px 0}
+.run:hover:not(:disabled){background:#315fb5}.run:disabled{background:#b8c6db;cursor:not-allowed}.run.diagnostic{background:#fff7e9;color:#936327;border:1px solid #f2dfbe}
+.run.diagnostic:hover:not(:disabled){background:#fff0d4}.result-table{width:100%;border-collapse:collapse;font-size:12px}.result-table td,.result-table th{text-align:left;padding:10px;border-bottom:1px solid #edf0f5}.result-table td:nth-child(2){font-weight:700}
+.run-output{white-space:pre-wrap;overflow-wrap:anywhere;max-height:280px;overflow:auto;background:#15253a;color:#e6edf7;padding:14px;border-radius:10px;font:12px Consolas,monospace}
+input{border:1px solid #d5deeb;border-radius:9px;padding:11px;width:255px;max-width:100%;font-size:12px}
+.muted{color:#7b899d;font-size:12px;line-height:1.7}.history-list{display:flex;flex-direction:column;gap:9px}.history-entry{border:1px solid #e5eaf2;border-radius:12px;overflow:hidden;background:#fff}
+.history-toggle{width:100%;border:0;background:transparent;padding:15px 17px;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:12px;color:#25384f}
+.history-toggle:hover,.history-entry.open .history-toggle{background:#f5f8fe}
+.history-main{display:flex;flex-direction:column;gap:5px;min-width:0}.history-main strong{font-size:13px}.history-main small{font-size:11px;color:#8793a6}.history-end{display:flex;align-items:center;gap:12px;flex-shrink:0}.chevron{color:#8796ab;font-size:18px}
+.status-chip{border-radius:99px;padding:5px 10px;font-size:11px;font-weight:700;text-transform:capitalize}.status-chip.passed{background:#e5f6ed;color:#258456}.status-chip.failed{background:#feeceb;color:#b34e4e}.status-chip.running{background:#e8f0ff;color:#3e6bc3}
+.run-detail{padding:18px;border-top:1px solid #e8edf4;background:#fcfdff}.run-detail h3{margin:0 0 10px}.detail-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
+.detail-metrics div{background:#f1f5fa;border-radius:9px;padding:12px}.detail-metrics strong{display:block;font-size:18px}.detail-metrics span{color:#77869b;font-size:11px}
+.asset-link{display:block;overflow-wrap:anywhere;color:#386ab5;font-size:12px;margin:10px 0}.history-hint{margin-top:8px}
+a{color:#386ab5}a:hover{text-decoration:underline}
+@media(max-width:1020px){.app-shell{grid-template-columns:190px minmax(0,1fr)}.grid{grid-template-columns:1fr}.layout{padding:22px}.topbar{padding:20px 22px}}
+@media(max-width:670px){.app-shell{display:block}.sidebar{padding:14px 18px;gap:12px;border-right:0;border-bottom:1px solid #e4eaf2}.nav{flex-direction:row;overflow:auto;gap:5px}.nav a{white-space:nowrap;padding:9px}.sidebar-note{display:none}.brand{padding:0}.summary{grid-template-columns:repeat(2,minmax(0,1fr))}.layout{padding:18px 12px}.topbar{padding:19px}.history-end{gap:6px}}
+
+.selection-toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:8px 0 13px}.selection-toolbar label{display:flex;gap:7px;align-items:center;font-size:12px;font-weight:600;color:#365278}.selection-toolbar input,.case-check{width:16px;height:16px;accent-color:#4776d0;cursor:pointer}.case-check{flex:0 0 auto;margin:0}.case-content{flex:1;min-width:0}.case-details{background:none;border:0;text-align:left;padding:0;color:inherit;flex:1;min-width:0}.case-details:hover strong{text-decoration:underline}.case-row{display:flex;align-items:center;gap:12px;border:1px solid #e4e9f2;padding:14px;margin:8px 0;border-radius:11px}.case-row:hover,.case-row.selected{background:#f1f6ff;border-color:#a8c3ed}.case-row.checked{border-left:3px solid #4776d0}.case-row .case-details strong{display:block;font-size:13px}.case-row .case-details small{display:block;margin-top:6px;color:#8190a3;font-size:11px}.run-selection{font-size:12px;color:#586b84;margin:8px 0}.run-selection strong{color:#2e65bb}
 </style></head><body>
-<header><small>AI-assisted quality engineering</small><h1>QA Management Portal</h1><p>Test inventory · Specifications · Automation readiness</p></header>
+<div class="app-shell">
+<aside class="sidebar" aria-label="Main navigation">
+  <div class="brand"><div class="brand-mark">Q</div><div><strong>QA Platform</strong><small>Quality Engineering</small></div></div>
+  <nav class="nav" aria-label="Portal sections">
+    <a href="#overview" class="active">▦ &nbsp; Overview</a>
+    <a href="#test-library">☷ &nbsp; Test Library</a>
+    <a href="#test-execution">▷ &nbsp; Test Execution</a>
+    <a href="#execution-history">◷ &nbsp; Execution History</a>
+  </nav>
+  <div class="sidebar-note">Local QA management workspace<br>Playwright-powered test execution</div>
+</aside>
+<div class="workspace">
+<header class="topbar" id="overview"><small>Quality Engineering Workspace</small><h1>QA Management Portal</h1><p>Test inventory · Execution · Reporting</p></header>
 <main class="layout">
-<div class="summary"><div class="metric"><span>Test Cases</span><strong id="count">—</strong></div><div class="metric"><span>Automated</span><strong id="automated">—</strong></div><div class="metric"><span>Current Phase</span><strong>M3.5</strong></div></div>
+<div class="summary"><div class="metric"><span>Test Cases</span><strong id="count">—</strong></div><div class="metric"><span>Automated</span><strong id="automated">—</strong></div><div class="metric"><span>Current Phase</span><strong>M3.6 · UI Refresh</strong></div></div>
 <div class="grid">
-<section class="panel"><div class="heading"><h2>Test Library</h2><input aria-label="Search test cases" id="search" placeholder="Search ID, title or category..."></div><p class="muted">Select a case to inspect its test steps and expected result.</p><div id="cases" aria-live="polite">Loading test cases...</div></section>
-<aside class="panel"><div class="heading"><h2>Test Specification</h2><span class="tag" id="priority">—</span></div><div id="details" aria-live="polite"><p class="muted">Select a case on the left to view its specification.</p></div><hr style="border:0;border-top:1px solid #e6eaf1;margin:22px 0"><h2>Test Execution</h2><button class="run" id="run-selected" type="button">Run Selected</button><button class="run" id="run-all" type="button">Run All</button><button class="run" id="run-diagnostic" type="button" style="background:#805019">Evidence Diagnostic (Expected Failure)</button><p class="muted">The runner starts Playwright locally. Stop any existing AUT server on port 3100 before starting a run. Only one run is allowed at once. The Evidence Diagnostic intentionally fails to test screenshots, video and traces.</p><p id="run-status" role="status">No execution started.</p><div id="result-summary" class="muted" aria-live="polite">Structured test results will appear after execution.</div><div style="overflow-x:auto"><table class="result-table" id="result-table" hidden><thead><tr><th>Test</th><th>Result</th><th>Duration</th></tr></thead><tbody id="result-rows"></tbody></table></div><pre class="run-output" id="run-output" hidden></pre><p><a href="http://127.0.0.1:3100" target="_blank" rel="noopener noreferrer">Open Event Monitoring AUT ↗</a></p></aside>
-</div><section class="panel" style="margin-top:20px"><h2>Execution History</h2><p class="muted">Each run keeps its own report and evidence. Select an execution to view details.</p><div id="history">No executions yet.</div><div id="run-assets" style="margin-top:14px"></div></section></main>
+<section class="panel" id="test-library"><div class="heading"><h2>Test Library</h2><input aria-label="Search test cases" id="search" placeholder="Search ID, title or category..."></div><p class="muted">Check one or more tests to run. Click a test title to inspect its specification.</p><div class="selection-toolbar"><label><input id="select-all" type="checkbox"> Select All</label><span id="selection-count" class="muted" aria-live="polite">0 selected</span><button id="clear-selection" type="button" class="tag" style="border:0;cursor:pointer">Clear</button></div><div id="cases" aria-live="polite">Loading test cases...</div></section>
+<aside class="panel" id="test-specification"><div class="heading"><h2>Test Specification</h2><span class="tag" id="priority">—</span></div><div id="details" aria-live="polite"><p class="muted">Select a case on the left to view its specification.</p></div></aside>
+</div>
+<section class="panel full-width-panel" id="test-execution">
+<h2>Test Execution</h2>
+<button class="run" id="run-selected" type="button" disabled>Run Selected (0)</button><button class="run" id="run-all" type="button">Run All</button><button class="run diagnostic" id="run-diagnostic" type="button">Evidence Diagnostic (Expected Failure)</button>
+<p class="run-selection" id="selected-test-ids" aria-live="polite">No tests selected.</p><p class="muted">Playwright starts the AUT locally. Keep port 3100 free before starting a run. Only one execution runs at a time. The evidence diagnostic intentionally fails.</p>
+<p id="run-status" role="status">No execution started.</p><div id="result-summary" class="muted" aria-live="polite">Structured test results will appear after execution.</div>
+<div style="overflow-x:auto"><table class="result-table" id="result-table" hidden><thead><tr><th>Test</th><th>Result</th><th>Duration</th></tr></thead><tbody id="result-rows"></tbody></table></div><pre class="run-output" id="run-output" hidden></pre>
+<p><a href="http://127.0.0.1:3100" target="_blank" rel="noopener noreferrer">Open Event Monitoring AUT ↗</a></p></section>
+<section class="panel" id="execution-history" style="margin-top:20px"><div class="heading"><h2>Execution History</h2><span class="tag">Run details</span></div><p class="muted">Select a run to expand its report and evidence directly below that run.</p><div id="history" class="history-list">No executions yet.</div></section>
+</main></div></div>
 <script>
 const list=document.getElementById('cases'),details=document.getElementById('details'),search=document.getElementById('search');
-let cases=[],selected=null;
+let cases=[],selected=null,selectedIds=new Set(),runInProgress=false;
 const element=(tag,text)=>{const node=document.createElement(tag);node.textContent=text;return node;};
-function renderDetails(item){selected=item.id;document.getElementById('priority').textContent=item.priority+' priority';details.replaceChildren(element('h3',item.id+' — '+item.title),element('p','Category: '+item.category),element('h4','Test steps'));const ol=document.createElement('ol');for(const step of item.steps)ol.append(element('li',step));details.append(ol,element('h4','Expected result'),element('p',item.expected));renderList();}
-function renderList(){list.replaceChildren();const q=search.value.trim().toLowerCase();const found=cases.filter(c=>(c.id+' '+c.title+' '+c.category).toLowerCase().includes(q));if(!found.length){list.append(element('p','No matching test cases.'));return;}for(const item of found){const btn=document.createElement('button');btn.type='button';btn.className='case'+(selected===item.id?' selected':'');btn.setAttribute('aria-pressed',String(selected===item.id));const left=document.createElement('span');left.append(element('strong',item.id+' · '+item.title),element('small',item.category+' · Automated with Playwright'));btn.append(left,element('span','›'));btn.onclick=()=>renderDetails(item);list.append(btn);}}
+const selectAllBox=document.getElementById('select-all'),selectionCount=document.getElementById('selection-count'),clearSelectionButton=document.getElementById('clear-selection');
+const selectedTestIds=document.getElementById('selected-test-ids');
+function updateSelectionUI(){
+  const count=selectedIds.size,total=cases.length;
+  selectionCount.textContent=count+' of '+total+' selected';
+  selectedTestIds.textContent=count?'Selected: '+cases.filter(c=>selectedIds.has(c.id)).map(c=>c.id).join(', '):'No tests selected.';
+  selectAllBox.checked=total>0&&count===total;
+  selectAllBox.indeterminate=count>0&&count<total;
+  selectAllBox.disabled=runInProgress||total===0;
+  clearSelectionButton.disabled=runInProgress||count===0;
+  selectedButton.disabled=runInProgress||count===0;
+  selectedButton.textContent='Run Selected ('+count+')';
+}
+function renderDetails(item){
+  selected=item.id;
+  document.getElementById('priority').textContent=item.priority+' priority';
+  details.replaceChildren(element('h3',item.id+' — '+item.title),element('p','Category: '+item.category),element('h4','Test steps'));
+  const ol=document.createElement('ol');
+  for(const step of item.steps)ol.append(element('li',step));
+  details.append(ol,element('h4','Expected result'),element('p',item.expected));
+  renderList();
+}
+function renderList(){
+  list.replaceChildren();
+  const q=search.value.trim().toLowerCase();
+  const found=cases.filter(c=>(c.id+' '+c.title+' '+c.category).toLowerCase().includes(q));
+  if(!found.length){list.append(element('p','No matching test cases.'));return;}
+  for(const item of found){
+    const row=document.createElement('div');
+    row.className='case-row'+(selected===item.id?' selected':'')+(selectedIds.has(item.id)?' checked':'');
+    const box=document.createElement('input');
+    box.type='checkbox';box.className='case-check';box.checked=selectedIds.has(item.id);
+    box.disabled=runInProgress;box.setAttribute('aria-label','Select '+item.id+' for execution');
+    box.addEventListener('change',()=>{
+      if(box.checked)selectedIds.add(item.id);else selectedIds.delete(item.id);
+      row.classList.toggle('checked',box.checked);
+      updateSelectionUI();
+    });
+    const btn=document.createElement('button');btn.type='button';btn.className='case-details';
+    btn.setAttribute('aria-pressed',String(selected===item.id));
+    btn.append(element('strong',item.id+' · '+item.title),element('small',item.category+' · Automated with Playwright'));
+    btn.onclick=()=>renderDetails(item);
+    row.append(box,btn);list.append(row);
+  }
+}
 search.addEventListener('input',renderList);
-const historyEl=document.getElementById('history'),assetsEl=document.getElementById('run-assets');
-let selectedHistoryId=null,historySignature='';
-async function showAssets(id){selectedHistoryId=id;assetsEl.replaceChildren();try{const [detail,evidence]=await Promise.all([fetch('/api/runs/'+id).then(r=>r.json()),fetch('/api/runs/'+id+'/evidence').then(r=>r.json())]);const run=detail.run;if(!run)return;assetsEl.append(element('h3','Run '+id.slice(0,8)));if(run.reportUrl){const a=element('a','Open Playwright HTML Report ↗');a.href=run.reportUrl;a.target='_blank';a.rel='noopener noreferrer';assetsEl.append(a);}const files=evidence.evidence||[];assetsEl.append(element('p',files.length+' evidence file(s). Failure screenshots, videos and traces are retained when generated.'));for(const file of files){const p=document.createElement('p');const link=element('a',file.name);link.href=file.url;link.target='_blank';link.rel='noopener noreferrer';p.append(link);assetsEl.append(p);}}catch(err){assetsEl.append(element('p','Unable to load run evidence: '+err.message));}}
-async function refreshHistory(){try{const data=await fetch('/api/runs',{cache:'no-store'}).then(r=>r.json());const runs=data.runs||[];const signature=runs.map(r=>r.id+':'+r.status).join('|');if(signature===historySignature)return;historySignature=signature;historyEl.replaceChildren();if(!runs.length){historyEl.textContent='No executions yet.';return;}for(const run of runs){const b=document.createElement('button');b.type='button';b.className='case';b.textContent=new Date(run.startedAt).toLocaleString()+' · '+run.selection+' · '+run.status.toUpperCase()+(run.summary?' · '+run.summary.passed+'/'+run.summary.total+' passed':'');b.onclick=()=>showAssets(run.id);historyEl.append(b);}if(selectedHistoryId)showAssets(selectedHistoryId);}catch(err){historyEl.textContent='History unavailable: '+err.message;}}
+selectAllBox.addEventListener('change',()=>{
+  if(selectAllBox.checked)selectedIds=new Set(cases.map(c=>c.id));
+  else selectedIds.clear();
+  renderList();updateSelectionUI();
+});
+clearSelectionButton.addEventListener('click',()=>{selectedIds.clear();renderList();updateSelectionUI();});
+const historyEl=document.getElementById('history');
+let selectedHistoryId=null,historySignature='',historyRequestSequence=0;
+async function showAssets(id, target){
+  const requestSequence=++historyRequestSequence;
+  target.replaceChildren(element('p','Loading run details...'));
+  try {
+    const [detailResponse,evidenceResponse]=await Promise.all([
+      fetch('/api/runs/'+encodeURIComponent(id),{cache:'no-store'}),
+      fetch('/api/runs/'+encodeURIComponent(id)+'/evidence',{cache:'no-store'})
+    ]);
+    if(!detailResponse.ok||!evidenceResponse.ok)throw Error('Unable to fetch run details');
+    const [detail,evidence]=await Promise.all([detailResponse.json(),evidenceResponse.json()]);
+    if(requestSequence!==historyRequestSequence||selectedHistoryId!==id||!target.isConnected)return;
+    const run=detail.run;if(!run)throw Error('Run was not found');
+    target.replaceChildren(element('h3','Run '+id.slice(0,8)));
+    if(run.summary){
+      const metrics=document.createElement('div');metrics.className='detail-metrics';
+      for(const [name,value] of [['Total',run.summary.total],['Passed',run.summary.passed],['Failed',run.summary.failed]]){
+        const cell=document.createElement('div');cell.append(element('strong',String(value)),element('span',name));metrics.append(cell);
+      }
+      target.append(metrics);
+      const table=document.createElement('table');table.className='result-table';
+      const head=document.createElement('thead'),header=document.createElement('tr');
+      for(const label of ['Test','Result','Duration'])header.append(element('th',label));
+      head.append(header);table.append(head);
+      const body=document.createElement('tbody');
+      for(const item of run.summary.tests||[]){
+        const tr=document.createElement('tr');
+        const status=item.status==='expected'?'Passed':item.status==='unexpected'?'Failed':item.status;
+        tr.append(element('td',item.id),element('td',status),element('td',(item.durationMs/1000).toFixed(2)+'s'));
+        if(item.error)tr.title=item.error;
+        body.append(tr);
+      }
+      table.append(body);target.append(table);
+    }else{target.append(element('p','No structured results available for this run.'));}
+    if(run.reportUrl){
+      const a=element('a','Open Playwright HTML Report ↗');a.className='asset-link';a.href=run.reportUrl;a.target='_blank';a.rel='noopener noreferrer';target.append(a);
+    }
+    const files=evidence.evidence||[];
+    target.append(element('p',files.length+' evidence file(s). Screenshots, video and traces are retained on failed tests when available.'));
+    for(const file of files){
+      const link=element('a',file.name);link.className='asset-link';link.href=file.url;link.target='_blank';link.rel='noopener noreferrer';target.append(link);
+    }
+  }catch(err){
+    if(requestSequence===historyRequestSequence&&target.isConnected)target.replaceChildren(element('p','Unable to load run details: '+err.message));
+  }
+}
+async function refreshHistory(){
+  try{
+    const response=await fetch('/api/runs',{cache:'no-store'});
+    if(!response.ok)throw Error('HTTP '+response.status);
+    const data=await response.json(),runs=data.runs||[];
+    const signature=runs.map(r=>r.id+':'+r.status+':'+(r.finishedAt||'')).join('|');
+    if(signature===historySignature)return;
+    historySignature=signature;historyEl.replaceChildren();
+    if(!runs.length){historyEl.textContent='No executions yet.';selectedHistoryId=null;return;}
+    let openTarget=null;
+    for(const run of runs){
+      const entry=document.createElement('div');entry.className='history-entry';
+      const button=document.createElement('button');button.type='button';button.className='history-toggle';
+      const main=document.createElement('span');main.className='history-main';
+      main.append(element('strong',run.selection==='all'?'Run All':run.selection==='evidence-check'?'Evidence Diagnostic':Array.isArray(run.selection)?'Selected: '+run.selection.join(', '):run.selection));
+      main.append(element('small',new Date(run.startedAt).toLocaleString()+' · '+(run.summary?run.summary.passed+'/'+run.summary.total+' passed':'Results pending')));
+      const end=document.createElement('span');end.className='history-end';
+      const chip=element('span',run.status);chip.className='status-chip '+run.status;
+      const chevron=element('span','⌄');chevron.className='chevron';
+      end.append(chip,chevron);button.append(main,end);
+      const panel=document.createElement('div');panel.className='run-detail';panel.hidden=true;panel.id='run-detail-'+run.id;
+      button.setAttribute('aria-controls',panel.id);button.setAttribute('aria-expanded','false');
+      button.onclick=()=>{
+        if(selectedHistoryId===run.id){selectedHistoryId=null;historyRequestSequence++;panel.hidden=true;entry.classList.remove('open');button.setAttribute('aria-expanded','false');return;}
+        selectedHistoryId=run.id;
+        for(const other of historyEl.querySelectorAll('.run-detail'))other.hidden=true;
+        for(const other of historyEl.querySelectorAll('.history-entry'))other.classList.remove('open');
+        for(const other of historyEl.querySelectorAll('.history-toggle'))other.setAttribute('aria-expanded','false');
+        panel.hidden=false;entry.classList.add('open');button.setAttribute('aria-expanded','true');
+        showAssets(run.id,panel);
+      };
+      entry.append(button,panel);historyEl.append(entry);
+      if(selectedHistoryId===run.id){panel.hidden=false;entry.classList.add('open');button.setAttribute('aria-expanded','true');openTarget=panel;}
+    }
+    if(openTarget)showAssets(selectedHistoryId,openTarget);
+    else selectedHistoryId=null;
+  }catch(err){historyEl.textContent='History unavailable: '+err.message;}
+}
 const runStatus=document.getElementById('run-status'),runOutput=document.getElementById('run-output');
 const selectedButton=document.getElementById('run-selected'),allButton=document.getElementById('run-all'),diagnosticButton=document.getElementById('run-diagnostic');
 let lastRunId=null;
@@ -33,7 +221,7 @@ async function refreshRun(){
   const {run}=await response.json();
   if(!run)return;
   const running=run.status==='running';
-  selectedButton.disabled=running;allButton.disabled=running;diagnosticButton.disabled=running;
+  runInProgress=running;allButton.disabled=running;diagnosticButton.disabled=running;updateSelectionUI();
   runStatus.textContent='Run '+run.id.slice(0,8)+' · '+run.selection+' · '+run.status.toUpperCase()+(run.exitCode===null?'':' · Exit '+run.exitCode);
   runOutput.hidden=false;runOutput.textContent=run.output||run.error||'Test process is starting...';
   if(run.id!==lastRunId){lastRunId=run.id;resultRows.replaceChildren();resultsTable.hidden=true;summaryEl.textContent='Run in progress — waiting for Playwright JSON results.';}
@@ -50,9 +238,16 @@ async function startRun(selection){
   await refreshRun();
  }catch(e){runStatus.textContent='Could not start run: '+e.message;await refreshRun();}
 }
-selectedButton.addEventListener('click',()=>startRun(selected));
+selectedButton.addEventListener('click',()=>{if(selectedIds.size>0&&!runInProgress)startRun(cases.filter(c=>selectedIds.has(c.id)).map(c=>c.id));});
 allButton.addEventListener('click',()=>startRun('all'));
 diagnosticButton.addEventListener('click',()=>startRun('evidence-check'));
+
+for(const navLink of document.querySelectorAll('.nav a')){
+  navLink.addEventListener('click',()=>{
+    for(const sibling of document.querySelectorAll('.nav a'))sibling.classList.remove('active');
+    navLink.classList.add('active');
+  });
+}
 refreshRun();refreshHistory();setInterval(refreshRun,1500);setInterval(refreshHistory,3000);
-fetch('/api/test-cases').then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json()}).then(data=>{cases=data;document.getElementById('count').textContent=cases.length;document.getElementById('automated').textContent=cases.length;renderDetails(cases[0]);}).catch(e=>{list.textContent='Unable to load test specifications: '+e.message});
+fetch('/api/test-cases').then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json()}).then(data=>{cases=data;document.getElementById('count').textContent=cases.length;document.getElementById('automated').textContent=cases.length;renderDetails(cases[0]);updateSelectionUI();}).catch(e=>{list.textContent='Unable to load test specifications: '+e.message});
 </script></body></html>

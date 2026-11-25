@@ -4,11 +4,11 @@ const { spawn } = require('node:child_process');
 const crypto = require('node:crypto');
 const { summarize } = require('./result-parser');
 const { detectFailures } = require('./failure-detection');
+const { prepareSelection } = require('./test-selection');
 const cases = require('./test-cases');
 const root = path.resolve(__dirname, '..');
 const resultsRoot = path.join(root, 'data', 'qa-results');
 const playwrightCLI = path.join(root, 'node_modules', '@playwright', 'test', 'cli.js');
-const knownIds = new Set(cases.map(item => item.id));
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const allowedExtensions = new Set(['.png', '.jpg', '.jpeg', '.webm', '.zip', '.txt']);
 let current = null;
@@ -55,14 +55,16 @@ function evidence(id) {
 }
 function launch(selection) {
   if (current && current.status === 'running') return { error: 'A test run is already in progress', code: 409 };
-  if (selection !== 'all' && selection !== 'evidence-check' && !knownIds.has(selection)) return { error: 'Unknown test case', code: 400 };
+  const prepared = prepareSelection(selection);
+  if (prepared.error) return prepared;
+  selection = prepared.selection;
   const run = { id: crypto.randomUUID(), selection, status: 'running', startedAt: new Date().toISOString(), finishedAt: null, exitCode: null, output: '', error: null, summary: null, failureDetection: null };
   current = run;
   const folder = runDirectory(run.id);
   fs.mkdirSync(folder, { recursive: true });
   save(run);
   const args = [playwrightCLI, 'test'];
-  if (selection !== 'all' && selection !== 'evidence-check') args.push('--grep', selection + ':');
+  if (prepared.grep) args.push('--grep', prepared.grep);
   const proc = spawn(process.execPath, args, {
     cwd: root, shell: false, windowsHide: true,
     env: { ...process.env, CI: '1', FORCE_COLOR: '0',

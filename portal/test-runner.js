@@ -4,6 +4,7 @@ const { spawn } = require('node:child_process');
 const crypto = require('node:crypto');
 const { summarize } = require('./result-parser');
 const { detectFailures } = require('./failure-detection');
+const { generateBugDrafts } = require('./bug-drafts');
 const { prepareSelection } = require('./test-selection');
 const cases = require('./test-cases');
 const root = path.resolve(__dirname, '..');
@@ -16,8 +17,8 @@ fs.mkdirSync(resultsRoot, { recursive: true });
 
 function publicRun(run) {
   if (!run) return null;
-  const { id, selection, status, startedAt, finishedAt, exitCode, output, error, summary, failureDetection } = run;
-  return { id, selection, status, startedAt, finishedAt, exitCode, output, error, summary, failureDetection, reportUrl: fs.existsSync(path.join(resultsRoot, id, 'report', 'index.html')) ? '/api/runs/' + id + '/report/index.html' : null };
+  const { id, selection, status, startedAt, finishedAt, exitCode, output, error, summary, failureDetection, bugDrafts } = run;
+  return { id, selection, status, startedAt, finishedAt, exitCode, output, error, summary, failureDetection, bugDrafts, reportUrl: fs.existsSync(path.join(resultsRoot, id, 'report', 'index.html')) ? '/api/runs/' + id + '/report/index.html' : null };
 }
 function runDirectory(id) { return path.join(resultsRoot, id); }
 function save(run) {
@@ -58,7 +59,7 @@ function launch(selection) {
   const prepared = prepareSelection(selection);
   if (prepared.error) return prepared;
   selection = prepared.selection;
-  const run = { id: crypto.randomUUID(), selection, status: 'running', startedAt: new Date().toISOString(), finishedAt: null, exitCode: null, output: '', error: null, summary: null, failureDetection: null };
+  const run = { id: crypto.randomUUID(), selection, status: 'running', startedAt: new Date().toISOString(), finishedAt: null, exitCode: null, output: '', error: null, summary: null, failureDetection: null, bugDrafts: null };
   current = run;
   const folder = runDirectory(run.id);
   fs.mkdirSync(folder, { recursive: true });
@@ -92,6 +93,9 @@ function launch(selection) {
       run.error = 'Unable to parse JSON test report: ' + err.message;
       if (run.status === 'passed') run.status = 'failed';
     }
+    const reportUrl = fs.existsSync(path.join(folder, 'report', 'index.html'))
+      ? '/api/runs/' + run.id + '/report/index.html' : null;
+    run.bugDrafts = generateBugDrafts(run.failureDetection, run.id, reportUrl, evidence(run.id));
     save(run);
   });
   return { run: snapshot() };

@@ -17,7 +17,7 @@
 .layout{max-width:1360px;margin:0 auto;padding:26px 30px 56px}.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin-bottom:22px}
 .metric{background:#fff;border:1px solid #e5eaf2;border-radius:15px;padding:20px;box-shadow:0 4px 18px #17263d06}
 .metric span{color:#8290a5;font-size:12px}.metric strong{display:block;font-size:25px;margin-top:8px;letter-spacing:-.035em}
-.grid{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(340px,.88fr);gap:20px;align-items:start}.panel{background:#fff;border:1px solid #e5eaf2;border-radius:16px;padding:21px;box-shadow:0 5px 20px #15253a08;scroll-margin-top:22px}
+.library-stack{display:flex;flex-direction:column;gap:20px;min-width:0}.grid{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(340px,.88fr);gap:20px;align-items:start}.panel{background:#fff;border:1px solid #e5eaf2;border-radius:16px;padding:21px;box-shadow:0 5px 20px #15253a08;scroll-margin-top:22px}
 .panel h2{font-size:18px;margin:0 0 12px;letter-spacing:-.025em}.panel h3{font-size:15px}.panel h4{font-size:13px}.heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
 .case{width:100%;text-align:left;border:1px solid #e4e9f2;background:#fff;padding:14px;margin:8px 0;border-radius:11px;color:#23354d;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .case:hover,.case.selected{border-color:#a8c3ed;background:#f1f6ff}.case strong{display:block;font-size:13px}.case small{display:block;margin-top:6px;color:#8190a3;font-size:11px}
@@ -57,13 +57,17 @@ a{color:#386ab5}a:hover{text-decoration:underline}
 <main class="layout">
 <div class="summary"><div class="metric"><span>Test Cases</span><strong id="count">—</strong></div><div class="metric"><span>Automated</span><strong id="automated">—</strong></div><div class="metric"><span>Current Phase</span><strong>M3.6 · UI Refresh</strong></div></div>
 <div class="grid">
+<div class="library-stack">
 <section class="panel" id="test-library"><div class="heading"><h2>Test Library</h2><input aria-label="Search test cases" id="search" placeholder="Search ID, title or category..."></div><p class="muted">Check one or more tests to run. Click a test title to inspect its specification.</p><div class="selection-toolbar"><label><input id="select-all" type="checkbox"> Select All</label><span id="selection-count" class="muted" aria-live="polite">0 selected</span><button id="clear-selection" type="button" class="tag" style="border:0;cursor:pointer">Clear</button></div><div id="cases" aria-live="polite">Loading test cases...</div></section>
-<aside class="panel" id="test-execution"><div class="heading"><h2>Test Specification</h2><span class="tag" id="priority">—</span></div><div id="details" aria-live="polite"><p class="muted">Select a case on the left to view its specification.</p></div><hr style="border:0;border-top:1px solid #e6eaf1;margin:22px 0"><h2>Test Execution</h2>
+<section class="panel" id="test-execution">
+<h2>Test Execution</h2>
 <button class="run" id="run-selected" type="button" disabled>Run Selected (0)</button><button class="run" id="run-all" type="button">Run All</button><button class="run diagnostic" id="run-diagnostic" type="button">Evidence Diagnostic (Expected Failure)</button>
 <p class="run-selection" id="selected-test-ids" aria-live="polite">No tests selected.</p><p class="muted">Playwright starts the AUT locally. Keep port 3100 free before starting a run. Only one execution runs at a time. The evidence diagnostic intentionally fails.</p>
 <p id="run-status" role="status">No execution started.</p><div id="result-summary" class="muted" aria-live="polite">Structured test results will appear after execution.</div>
 <div style="overflow-x:auto"><table class="result-table" id="result-table" hidden><thead><tr><th>Test</th><th>Result</th><th>Duration</th></tr></thead><tbody id="result-rows"></tbody></table></div><pre class="run-output" id="run-output" hidden></pre>
-<p><a href="http://127.0.0.1:3100" target="_blank" rel="noopener noreferrer">Open Event Monitoring AUT ↗</a></p></aside>
+<p><a href="http://127.0.0.1:3100" target="_blank" rel="noopener noreferrer">Open Event Monitoring AUT ↗</a></p></section>
+</div>
+<aside class="panel" id="test-specification"><div class="heading"><h2>Test Specification</h2><span class="tag" id="priority">—</span></div><div id="details" aria-live="polite"><p class="muted">Select a case on the left to view its specification.</p></div></aside>
 </div>
 <section class="panel" id="execution-history" style="margin-top:20px"><div class="heading"><h2>Execution History</h2><span class="tag">Run details</span></div><p class="muted">Select a run to expand its report and evidence directly below that run.</p><div id="history" class="history-list">No executions yet.</div></section>
 </main></div></div>

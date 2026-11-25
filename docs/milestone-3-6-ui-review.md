@@ -51,3 +51,39 @@ Open http://127.0.0.1:3200; refresh the page with Ctrl+F5 if the old UI is cache
 ## Verification status
 
 Source changes have been inspected after commit. Browser and Playwright runtime acceptance must be performed by the project owner on Windows before M3.6 is marked Accepted.
+
+## M3.6 follow-up — Checkbox test selection
+
+Accepted UI review feedback: choose one, several or all test cases via checkboxes.
+
+- Each test row has an independent checkbox. Clicking the test title still displays the specification without changing its checkbox.
+- Select All / Clear affect the full five-case library, even while search text filters the visible rows.
+- Run Selected (N) is disabled if no tests are checked. Run All and Evidence Diagnostic remain separate.
+- Frontend sends `{ "selection": ["TC-001", "TC-003"] }` for multiple checked tests.
+- `portal/test-selection.js` validates allowlisted IDs before forming the Playwright `--grep` expression. It still accepts legacy single ID, `all` and `evidence-check`.
+- New runs with multiple IDs save an ordered array in `run.selection`; Execution History renders it as a comma-separated list.
+- No changes to the AUT, Playwright tests, reports, evidence retention or M4.1 failure detection.
+
+### Additional Windows acceptance
+
+Stop the Portal, then pull the UI branch and restart it:
+
+```powershell
+git pull origin feature/m3-6-portal-ui
+node --test tests/test-selection.test.cjs
+node --test tests/failure-detection.test.cjs
+npm.cmd run portal
+```
+
+1. Initially zero checked tests; Run Selected (0) is disabled.
+2. Check TC-001 and TC-003; Run Selected (2) executes exactly two cases. History records the selected IDs.
+3. Uncheck one; Run Selected (1) executes exactly one case.
+4. Select All checks five cases; Run Selected (5) executes exactly five. Run All also works independently.
+5. Clear resets the checked tests and disables Run Selected.
+6. Searching the library does not erase selections made outside the search results.
+7. Execution History still expands directly below the run, and HTML Report links open.
+8. DIAG-001 remains a separate intentional failure and `failureDetection.status` remains `excluded`.
+
+Note: The checked set belongs to the current browser page; refreshing resets the selection to none. This is intentional for a local prototype.
+
+**Local acceptance is pending.** Do not treat new unit test definitions as executed tests until verified on Windows.

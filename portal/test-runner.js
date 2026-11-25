@@ -3,6 +3,7 @@ const path = require('node:path');
 const { spawn } = require('node:child_process');
 const crypto = require('node:crypto');
 const { summarize } = require('./result-parser');
+const { detectFailures } = require('./failure-detection');
 const cases = require('./test-cases');
 const root = path.resolve(__dirname, '..');
 const resultsRoot = path.join(root, 'data', 'qa-results');
@@ -15,8 +16,8 @@ fs.mkdirSync(resultsRoot, { recursive: true });
 
 function publicRun(run) {
   if (!run) return null;
-  const { id, selection, status, startedAt, finishedAt, exitCode, output, error, summary } = run;
-  return { id, selection, status, startedAt, finishedAt, exitCode, output, error, summary, reportUrl: fs.existsSync(path.join(resultsRoot, id, 'report', 'index.html')) ? '/api/runs/' + id + '/report/index.html' : null };
+  const { id, selection, status, startedAt, finishedAt, exitCode, output, error, summary, failureDetection } = run;
+  return { id, selection, status, startedAt, finishedAt, exitCode, output, error, summary, failureDetection, reportUrl: fs.existsSync(path.join(resultsRoot, id, 'report', 'index.html')) ? '/api/runs/' + id + '/report/index.html' : null };
 }
 function runDirectory(id) { return path.join(resultsRoot, id); }
 function save(run) {
@@ -55,7 +56,7 @@ function evidence(id) {
 function launch(selection) {
   if (current && current.status === 'running') return { error: 'A test run is already in progress', code: 409 };
   if (selection !== 'all' && selection !== 'evidence-check' && !knownIds.has(selection)) return { error: 'Unknown test case', code: 400 };
-  const run = { id: crypto.randomUUID(), selection, status: 'running', startedAt: new Date().toISOString(), finishedAt: null, exitCode: null, output: '', error: null, summary: null };
+  const run = { id: crypto.randomUUID(), selection, status: 'running', startedAt: new Date().toISOString(), finishedAt: null, exitCode: null, output: '', error: null, summary: null, failureDetection: null };
   current = run;
   const folder = runDirectory(run.id);
   fs.mkdirSync(folder, { recursive: true });
@@ -82,8 +83,10 @@ function launch(selection) {
     if (signal) run.error = 'Process terminated: ' + signal;
     try {
       run.summary = summarize(JSON.parse(fs.readFileSync(path.join(folder, 'results.json'), 'utf8')));
+      run.failureDetection = detectFailures(run.summary, selection);
       if (!run.summary.total && run.status === 'passed') { run.status = 'failed'; run.error = 'No test results in JSON report'; }
     } catch (err) {
+      run.failureDetection = detectFailures(null, selection);
       run.error = 'Unable to parse JSON test report: ' + err.message;
       if (run.status === 'passed') run.status = 'failed';
     }

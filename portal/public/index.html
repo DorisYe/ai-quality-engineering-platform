@@ -40,6 +40,7 @@ a{color:#386ab5}a:hover{text-decoration:underline}
 @media(max-width:670px){.app-shell{display:block}.sidebar{padding:14px 18px;gap:12px;border-right:0;border-bottom:1px solid #e4eaf2}.nav{flex-direction:row;overflow:auto;gap:5px}.nav a{white-space:nowrap;padding:9px}.sidebar-note{display:none}.brand{padding:0}.summary{grid-template-columns:repeat(2,minmax(0,1fr))}.layout{padding:18px 12px}.topbar{padding:19px}.history-end{gap:6px}}
 
 .selection-toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:8px 0 13px}.selection-toolbar label{display:flex;gap:7px;align-items:center;font-size:12px;font-weight:600;color:#365278}.selection-toolbar input,.case-check{width:16px;height:16px;accent-color:#4776d0;cursor:pointer}.case-check{flex:0 0 auto;margin:0}.case-content{flex:1;min-width:0}.case-details{background:none;border:0;text-align:left;padding:0;color:inherit;flex:1;min-width:0}.case-details:hover strong{text-decoration:underline}.case-row{display:flex;align-items:center;gap:12px;border:1px solid #e4e9f2;padding:14px;margin:8px 0;border-radius:11px}.case-row:hover,.case-row.selected{background:#f1f6ff;border-color:#a8c3ed}.case-row.checked{border-left:3px solid #4776d0}.case-row .case-details strong{display:block;font-size:13px}.case-row .case-details small{display:block;margin-top:6px;color:#8190a3;font-size:11px}.run-selection{font-size:12px;color:#586b84;margin:8px 0}.run-selection strong{color:#2e65bb}
+.draft-section{margin-top:20px;padding-top:18px;border-top:1px solid #e7edf5}.draft-heading{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.draft-heading h4{margin:0;font-size:15px}.draft-card{border:1px solid #e4eaf4;border-radius:12px;margin:12px 0;padding:16px;background:#fff}.draft-card h5{margin:0 0 9px;font-size:13px;line-height:1.5}.draft-field{margin:10px 0}.draft-field strong{display:block;font-size:11px;color:#6e7f96;margin-bottom:5px}.draft-field p,.draft-field ol{margin:0;font-size:12px;line-height:1.65;overflow-wrap:anywhere;white-space:pre-wrap}.draft-note{background:#fff7e9;color:#7a5b26;padding:10px;border-radius:9px;font-size:11px;line-height:1.6;margin:8px 0}.draft-links{display:flex;flex-direction:column;gap:8px}
 </style></head><body>
 <div class="app-shell">
 <aside class="sidebar" aria-label="Main navigation">
@@ -168,6 +169,51 @@ async function showAssets(id, target){
     for(const file of files){
       const link=element('a',file.name);link.className='asset-link';link.href=file.url;link.target='_blank';link.rel='noopener noreferrer';target.append(link);
     }
+    const draftSection=document.createElement('section');draftSection.className='draft-section';
+    const draftHeading=document.createElement('div');draftHeading.className='draft-heading';
+    draftHeading.append(element('h4','Bug Drafts — Review Required'));
+    draftSection.append(draftHeading);
+    const bugDrafts=run.bugDrafts;
+    if(!bugDrafts)draftSection.append(element('p','Bug Draft generation was not enabled for this historical run.'));
+    else if(bugDrafts.status==='excluded')draftSection.append(element('p','Diagnostic run excluded: no Bug Drafts generated.'));
+    else if(bugDrafts.status==='unavailable')draftSection.append(element('p','No Bug Drafts: structured failure results were unavailable.'));
+    else if(!bugDrafts.count)draftSection.append(element('p','No unexpected failures detected. No Bug Drafts generated.'));
+    else{
+      draftSection.append(element('p',bugDrafts.count+' candidate draft(s). Review each failure before creating a defect.'));
+      for(const draft of bugDrafts.drafts){
+        const card=document.createElement('article');card.className='draft-card';
+        card.append(element('h5',draft.title));
+        const note=element('div','Needs human review · An unexpected test result does not prove a product bug.');
+        note.className='draft-note';card.append(note);
+        function field(name,value){
+          const container=document.createElement('div');container.className='draft-field';
+          container.append(element('strong',name),element('p',value||'Not provided'));
+          card.append(container);
+        }
+        field('Test ID',draft.testId);
+        field('Expected Result',draft.expected);
+        field('Actual Result / Error',draft.actual);
+        const steps=document.createElement('div');steps.className='draft-field';
+        steps.append(element('strong','Steps to Reproduce (from test specification)'));
+        const ordered=document.createElement('ol');
+        for(const step of draft.stepsToReproduce||[])ordered.append(element('li',step));
+        if(ordered.childElementCount)steps.append(ordered);
+        else steps.append(element('p','Verify reproduction steps manually.'));
+        card.append(steps);
+        if(draft.reportUrl){
+          const link=element('a','Open associated Playwright report ↗');
+          link.href=draft.reportUrl;link.target='_blank';link.rel='noopener noreferrer';link.className='asset-link';card.append(link);
+        }
+        if(draft.evidenceLinks?.length){
+          card.append(element('div','Run-level Evidence (not yet mapped to this specific test):'));
+          for(const file of draft.evidenceLinks){
+            const link=element('a',file.name);link.className='asset-link';link.href=file.url;link.target='_blank';link.rel='noopener noreferrer';card.append(link);
+          }
+        }
+        draftSection.append(card);
+      }
+    }
+    target.append(draftSection);
   }catch(err){
     if(requestSequence===historyRequestSequence&&target.isConnected)target.replaceChildren(element('p','Unable to load run details: '+err.message));
   }

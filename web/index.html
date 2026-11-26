@@ -10,7 +10,7 @@
 <body><main class="shell">
 <header><div><h1>Event Monitoring Dashboard</h1><p>Infrastructure events · Local demonstration application</p></div><span class="pill">● Auto refresh every 3s</span></header>
 <section class="summary"><div class="metric"><span>Total Events</span><strong id="total-count">0</strong></div><div class="metric"><span>Active Events</span><strong id="active-count">0</strong></div><div class="metric"><span>Critical Events</span><strong id="critical-count">0</strong></div></section>
-<section class="panel"><div class="toolbar"><h2>Event History</h2><div class="filters"><label>Severity <select id="severity-filter"><option value="All">All</option><option>Info</option><option>Warning</option><option>Critical</option></select></label><label>Status <select id="status-filter"><option value="All">All</option><option>Active</option><option>Acknowledged</option></select></label><button id="refresh-button" type="button">Refresh</button></div></div>
+<section class="panel"><div class="toolbar"><h2>Event History</h2><div class="filters"><label>Severity <select id="severity-filter"><option value="All">All</option><option>Info</option><option>Warning</option><option>Critical</option></select></label><label>Status <select id="status-filter"><option value="All">All</option><option>Active</option><option>Acknowledged</option></select></label><button id="reset-filters-button" type="button" title="Controlled demo defect: only Severity is reset">Reset Filters</button><button id="refresh-button" type="button">Refresh</button></div></div>
 <div id="message" role="status" aria-live="polite"></div>
 <div class="scroll"><table><thead><tr><th>Event ID</th><th>Type</th><th>Severity</th><th>Source</th><th>Status</th><th>Created (Local)</th><th>Action</th></tr></thead><tbody id="event-list"><tr><td colspan="7">Loading events...</td></tr></tbody></table></div></section></main>
 <script>
@@ -39,6 +39,14 @@ async function refresh(){
  try{const res=await fetch('/api/events',{cache:'no-store'});if(!res.ok)throw new Error('HTTP '+res.status);events=await res.json();message.classList.remove('error');display();}
  catch(err){message.classList.add('error');message.textContent='Failed to load events: '+err.message;}
 }
+// CONTROLLED DEMO DEFECT (TC-006): Reset Filters intentionally resets Severity only.
+// Keep Status unchanged so the end-to-end QA workflow has a repeatable, real AUT failure.
+// DO NOT "fix" this in the demo branch; see docs/milestone-4-3-controlled-defect.md.
+document.getElementById('reset-filters-button').addEventListener('click',()=>{
+  severityFilter.value='All';
+  // Intentional omission: statusFilter.value='All';
+  display();
+});
 severityFilter.addEventListener('change',display);statusFilter.addEventListener('change',display);document.getElementById('refresh-button').addEventListener('click',refresh);
 refresh();setInterval(refresh,3000);
 </script></body></html>

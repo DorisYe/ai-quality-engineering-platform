@@ -60,4 +60,10 @@ A red temporary negative-path run is the expected result **only for that isolate
 
 Branch protection / required PR status checks are postponed to M5.5. GitHub Actions test status is not yet enforced as a merge restriction.
 
-**Status: implementation committed; acceptance pending local and GitHub-hosted verification.**
+**Status: ACCEPTED — owner-confirmed local, GitHub-hosted and negative-path validation (2026-11-26).**
+
+## Final acceptance record — 2026-11-26
+
+**ACCEPTED (project owner confirmed).** The owner confirmed all five normal-path acceptance checks passed, including local static/unit/core commands, successful three-gate GitHub Actions execution on `feature/m5-3-quality-gates`, and downloadable HTML report. The owner also confirmed all four negative-path checks passed on isolated `validation/m5-3-static-gate-failure` (commit `86b6d665ce053692036b2a074a1a4dc950778fe8`): workflow red, static syntax check fails specifically with SyntaxError, downstream Playwright regression skipped, and run belongs to the temporary validation branch.
+
+This documents user-reported execution results, not an independently rerun test from the documentation update. The invalid syntax is **only** on the isolated negative-validation branch and must not be merged. Normal quality gates and the TC-006 controlled defect remain unchanged. Next: M5.4 CI Run History integration in QA Portal.

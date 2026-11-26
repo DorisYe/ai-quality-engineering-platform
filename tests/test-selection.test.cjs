@@ -38,3 +38,9 @@ test('controlled demo TC-006 is allowlisted for selected runs', () => {
     selection: ['TC-003', 'TC-006'], grep: '\\b(?:TC-003|TC-006):'
   });
 });
+
+test('selected-case grep matches the full Playwright title path with a file prefix', () => {
+  const { grep } = prepareSelection('TC-006');
+  assert.match('events.spec.ts TC-006: Reset Filters restores Severity and Status to All', new RegExp(grep));
+  assert.doesNotMatch('events.spec.ts TC-005: invalid event payload', new RegExp(grep));
+});

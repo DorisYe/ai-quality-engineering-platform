@@ -24,7 +24,7 @@ permissions:
 
 jobs:
   core-tests:
-    name: Required Quality Gates (Static + Unit + Core Playwright)
+    name: Required Quality Gates (Static + Unit/Integration + Core Playwright)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -52,7 +52,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run Node.js unit and integration tests
-        run: npm run test:unit
+        run: npm run test:unit-integration
 
       # TC-006 is a deliberately broken AUT demonstration; DIAG-001 is separate.
       # Required CI regression includes only TC-001 through TC-005.

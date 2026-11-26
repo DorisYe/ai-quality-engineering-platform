@@ -46,3 +46,34 @@ test('multiple unexpected failures each get stable unique draft identifiers', ()
   assert.notEqual(result.drafts[0].id,result.drafts[1].id);
   assert.equal(result.drafts[1].testId,'TC-005');
 });
+
+test('Playwright ANSI-colored locator error is human readable in Actual Result', () => {
+  const error = [
+    'Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue failed',
+    '',
+    "Locator:  locator('#status-filter')",
+    'Expected: \u001b[32m"All"\u001b[39m',
+    'Received: \u001b[31m"Active"\u001b[39m',
+    'Timeout:  12000ms',
+    '',
+    'Call log:',
+    '  - waiting for locator'
+  ].join('\n');
+  const draft = generateBugDrafts(
+    {status:'available',failures:[{...failure,testId:'TC-006',errorMessage:error}]},
+    runId,reportUrl
+  ).drafts[0];
+  assert.equal(draft.actual, "Element '#status-filter': expected \"All\", but received \"Active\".");
+  assert.equal(draft.actual.includes('\u001b'),false);
+  assert.equal(draft.actual.includes('Call log'),false);
+  assert.equal(draft.actual.includes('12000'),false);
+});
+
+test('unknown error retains useful text without misleading root-cause inference', () => {
+  const error = 'Error: Connection closed unexpectedly\nCall log:\n  - retrying\n    at test.ts:10:3';
+  const draft = generateBugDrafts(
+    {status:'available',failures:[{...failure,errorMessage:error}]},
+    runId,reportUrl
+  ).drafts[0];
+  assert.equal(draft.actual,'Error: Connection closed unexpectedly');
+});

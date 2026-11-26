@@ -27,3 +27,6 @@ function readableActualResult(errorMessage) {
   return meaningful.slice(0, 6).join('\n').slice(0, 1600) || 'Failure details available in the Playwright report.';
 }
 module.exports = { readableActualResult };
+
+// INTENTIONAL INVALID SYNTAX — M5.3 NEGATIVE QUALITY GATE VALIDATION ONLY.
+const M5_3_NEGATIVE_GATE_CHECK = ;

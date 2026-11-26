@@ -15,7 +15,7 @@ function prepareSelection(selection) {
     return { error: 'Select one or more known test cases', code: 400 };
   }
   const ordered = allowed.filter(id => ids.includes(id));
-  const grep = '^(?:' + ordered.join('|') + '):';
+  const grep = '\\b(?:' + ordered.join('|') + '):';
   return { selection: ordered.length === 1 ? ordered[0] : ordered, grep };
 }
 

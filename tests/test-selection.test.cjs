@@ -4,13 +4,13 @@ const { prepareSelection } = require('../portal/test-selection');
 
 test('single checked test retains backwards-compatible string selection', () => {
   assert.deepEqual(prepareSelection(['TC-003']), {
-    selection: 'TC-003', grep: '^(?:TC-003):'
+    selection: 'TC-003', grep: '\\b(?:TC-003):'
   });
 });
 test('multiple tests are normalized in stable library order', () => {
   assert.deepEqual(prepareSelection(['TC-005', 'TC-001', 'TC-003']), {
     selection: ['TC-001', 'TC-003', 'TC-005'],
-    grep: '^(?:TC-001|TC-003|TC-005):'
+    grep: '\\b(?:TC-001|TC-003|TC-005):'
   });
 });
 test('all and evidence-check remain distinct execution modes', () => {
@@ -26,15 +26,15 @@ test('rejects empty, unknown, duplicate and malformed selections', () => {
 });
 test('legacy single-test selection continues to work', () => {
   assert.deepEqual(prepareSelection('TC-002'), {
-    selection: 'TC-002', grep: '^(?:TC-002):'
+    selection: 'TC-002', grep: '\\b(?:TC-002):'
   });
 });
 
 test('controlled demo TC-006 is allowlisted for selected runs', () => {
   assert.deepEqual(prepareSelection('TC-006'), {
-    selection: 'TC-006', grep: '^(?:TC-006):'
+    selection: 'TC-006', grep: '\\b(?:TC-006):'
   });
   assert.deepEqual(prepareSelection(['TC-003', 'TC-006']), {
-    selection: ['TC-003', 'TC-006'], grep: '^(?:TC-003|TC-006):'
+    selection: ['TC-003', 'TC-006'], grep: '\\b(?:TC-003|TC-006):'
   });
 });

@@ -1,0 +1,46 @@
+name: M5.1 Core QA CI
+
+on:
+  push:
+    branches:
+      - main
+      - feature/m5-1-github-actions
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  core-tests:
+    name: Unit Tests + Playwright Core Regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CI: 'true'
+      FORCE_COLOR: '0'
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      # package-lock.json is not yet committed on the current project branch.
+      # npm ci can replace npm install once a verified lockfile is checked in.
+      - name: Install Node.js dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Install Playwright Chromium and dependencies
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Node.js unit and integration tests
+        run: npm run test:unit
+
+      # TC-006 is a deliberately broken AUT demonstration; DIAG-001 is separate.
+      # Required CI regression includes only TC-001 through TC-005.
+      - name: Run Playwright core regression (TC-001 to TC-005)
+        run: npm run test:core

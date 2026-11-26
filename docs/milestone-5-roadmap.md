@@ -15,25 +15,24 @@ Run core Playwright and Node tests automatically in GitHub Actions, retain CI te
 
 Owner confirmed local test commands and GitHub Actions success.
 
-## M5.2 — CI Test Reports & Artifacts — IN PROGRESS
+## M5.2 — CI Test Reports & Artifacts — ACCEPTED
 
 - Upload the Playwright HTML Report for normal and failed executions when generated.
 - Upload screenshots, videos and traces when failures produce evidence.
 - 7-day artifact retention.
-- Owner confirmed **all five happy-path checks PASS**.
-- **Remaining acceptance:** manually run `controlled-defect` TC-006 and verify downloadable HTML Report, Screenshot, Video and Trace from a deliberately failed Actions run. Normal CI must remain green.
+- Owner confirmed normal CI (5/5), downloadable HTML Report, and intentional TC-006 failure evidence (Screenshot/Video/Trace). Final acceptance recorded in `docs/milestone-5-2-ci-artifacts.md`.
 
-## M5.3 — Automated Quality Gates — PREVIOUSLY M5.4
+## M5.3 — Automated Quality Gates — ACCEPTED
 
 **Goal:** Establish reliable CI quality verdicts and required checks before integrating CI results into the Portal.
 
 - Required Node unit/integration and clean core Playwright tests.
 - Basic static checks and unambiguous failure semantics.
 - TC-006 continues excluded from required CI quality gates; optional manually triggered Controlled Defect execution is expected to fail by design.
-- Verify a failing required check produces a failed CI run without changing the permanent demo defect.
+- Owner confirmed both successful core CI and deliberately failing syntax-check gate on isolated validation branch. Final acceptance recorded in `docs/milestone-5-3-quality-gates.md`.
 - Leave PR branch-protection configuration to M5.5.
 
-## M5.4 — GitHub Actions Run History in QA Portal — NEW
+## M5.4 — GitHub Actions Run History in QA Portal — DESIGN PREPARED
 
 **Goal:** Display local and GitHub Actions executions in QA Portal so QA can track both in one place, without pretending a cloud run was executed locally.
 
@@ -67,7 +66,7 @@ Design validation must happen before implementation, especially repository acces
 
 ## Development sequence
 
-Complete M5.2 failure-evidence acceptance first. Then implement M5.3 quality gates on a fresh feature branch based on accepted M5.2; integrate CI history into QA Portal in M5.4 after the CI contract is stable. Do not modify working CI/test execution while merely revising this roadmap.
+M5.1–M5.3 have been accepted. The M5.4 design and branch `feature/m5-4-portal-ci-history` are prepared; implement the read-only Portal integration next, then perform M5.4 acceptance before M5.5 PR/branch-protection work.
 
 ## Non-goals
 

@@ -12,6 +12,14 @@ M4.4 is **not** Jira Integration, AI Failure Signature Analysis, Bug Deduplicati
 
 M4.3 was confirmed by the owner as locally accepted, including TC-006 controlled defect, review persistence, TXT export, video serving and the relocated TC-006 Test Specification note. TC-006 remains deliberately broken in the AUT for future demonstrations. M4.4 branches from `feature/m4-3-human-review`, preserving all those changes. Do not merge M4.4 into `main`, where older M4 code exists, without first reconciling the accepted rebuild branch.
 
+## M4.4 usability fix: human-readable Actual Result
+
+Bug Draft generation now formats Playwright locator assertion errors into concise descriptions (for example `Element '#status-filter': expected "All", but received "Active".`). This removes ANSI color escapes and repetitive Call Log text from the newly generated draft's editable `Actual Result`.
+
+The original Playwright error remains unchanged in `failureDetection.failures[].errorMessage`, the test result summary and HTML report for technical troubleshooting. This is presentation formatting, **not** root-cause analysis or failure-signature detection (M8.1).
+
+**Existing historical Bug Drafts and saved Reviews are not retroactively edited.** Rerun TC-006 after pulling M4.4 to see the new default Actual Result. For older saved reviews, QA can edit the Actual Result manually.
+
 ## Integration tests
 
 `tests/m4-integration.test.cjs` adds four contract-level scenarios:
@@ -48,7 +56,7 @@ If the branch already exists, `git switch feature/m4-4-integration-acceptance` a
 - [ ] Test Library and Test Specification show TC-001–TC-006; demo notice appears only on TC-006 specification.
 - [ ] Select TC-001–TC-005: Run Selected produces five PASS and no Bug Drafts.
 - [ ] Select TC-006: test actually executes and fails on Status Reset (not infrastructure/port/grep error).
-- [ ] TC-006 Run History contains one correct M4.1 unexpected failure and one M4.2 Bug Draft with correct expected/actual/run ID.
+- [ ] TC-006 Run History contains one correct M4.1 unexpected failure and one M4.2 Bug Draft with correct expected/actual/run ID; new Actual Result is human readable, free of ANSI color escapes and repetitive Call Log lines.
 - [ ] TC-006 Evidence screenshot/video/trace and HTML Report links work; WebM video plays in browser.
 - [ ] Edit TC-006 review (title, expected, actual, steps, triage, severity, priority, notes), save successfully, refresh/restart Portal and verify data persists.
 - [ ] Export TXT is disabled before first save or when unsaved edits exist; after saving it downloads correct content. Jira Integration remains disabled.

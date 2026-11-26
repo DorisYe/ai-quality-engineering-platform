@@ -29,3 +29,12 @@ test('legacy single-test selection continues to work', () => {
     selection: 'TC-002', grep: '^(?:TC-002):'
   });
 });
+
+test('controlled demo TC-006 is allowlisted for selected runs', () => {
+  assert.deepEqual(prepareSelection('TC-006'), {
+    selection: 'TC-006', grep: '^(?:TC-006):'
+  });
+  assert.deepEqual(prepareSelection(['TC-003', 'TC-006']), {
+    selection: ['TC-003', 'TC-006'], grep: '^(?:TC-003|TC-006):'
+  });
+});

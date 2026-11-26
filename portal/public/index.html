@@ -261,7 +261,7 @@ async function showAssets(id, target){
           stepsInput.value=review.stepsToReproduce.join('\n');
           decision.value=review.triageDecision;status.value=review.reviewStatus;
           severity.value=review.severity;priority.value=review.priority;notes.value=review.reviewNotes;
-          revision=review.revision;dirty=false;exportButton.disabled=false;
+          revision=review.revision;savedReview=review;dirty=false;exportButton.disabled=false;
         }
         for(const input of editFields)input.addEventListener('input',()=>{
           dirty=true;exportButton.disabled=true;

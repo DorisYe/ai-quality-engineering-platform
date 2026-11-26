@@ -23,7 +23,17 @@ Owner confirmed local test commands and GitHub Actions success.
 - Owner confirmed **all five happy-path checks PASS**.
 - **Remaining acceptance:** manually run `controlled-defect` TC-006 and verify downloadable HTML Report, Screenshot, Video and Trace from a deliberately failed Actions run. Normal CI must remain green.
 
-## M5.3 — GitHub Actions Run History in QA Portal — NEW
+## M5.3 — Automated Quality Gates — PREVIOUSLY M5.4
+
+**Goal:** Establish reliable CI quality verdicts and required checks before integrating CI results into the Portal.
+
+- Required Node unit/integration and clean core Playwright tests.
+- Basic static checks and unambiguous failure semantics.
+- TC-006 continues excluded from required CI quality gates; optional manually triggered Controlled Defect execution is expected to fail by design.
+- Verify a failing required check produces a failed CI run without changing the permanent demo defect.
+- Leave PR branch-protection configuration to M5.5.
+
+## M5.4 — GitHub Actions Run History in QA Portal — NEW
 
 **Goal:** Display local and GitHub Actions executions in QA Portal so QA can track both in one place, without pretending a cloud run was executed locally.
 
@@ -48,12 +58,6 @@ Acceptance criteria:
 
 Design validation must happen before implementation, especially repository access and the minimum GitHub authentication permissions needed.
 
-## M5.4 — Automated Quality Gates — PREVIOUSLY M5.3
-
-- Required Node unit/integration and clean core Playwright tests.
-- Basic static checks and CI failure semantics.
-- TC-006 continues excluded from required gates.
-
 ## M5.5 — Final Integration & PR / Branch Protection — PREVIOUSLY M5.4
 
 - Verify the full CI pipeline and Portal CI visibility.
@@ -63,7 +67,7 @@ Design validation must happen before implementation, especially repository acces
 
 ## Development sequence
 
-Complete M5.2 failure-evidence acceptance first. Then design and implement M5.3 on a fresh feature branch based on the accepted M5.2 branch. Do not modify working CI/test execution while merely revising this roadmap.
+Complete M5.2 failure-evidence acceptance first. Then implement M5.3 quality gates on a fresh feature branch based on accepted M5.2; integrate CI history into QA Portal in M5.4 after the CI contract is stable. Do not modify working CI/test execution while merely revising this roadmap.
 
 ## Non-goals
 

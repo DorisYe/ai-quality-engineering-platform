@@ -41,6 +41,8 @@ a{color:#386ab5}a:hover{text-decoration:underline}
 
 .selection-toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:8px 0 13px}.selection-toolbar label{display:flex;gap:7px;align-items:center;font-size:12px;font-weight:600;color:#365278}.selection-toolbar input,.case-check{width:16px;height:16px;accent-color:#4776d0;cursor:pointer}.case-check{flex:0 0 auto;margin:0}.case-content{flex:1;min-width:0}.case-details{background:none;border:0;text-align:left;padding:0;color:inherit;flex:1;min-width:0}.case-details:hover strong{text-decoration:underline}.case-row{display:flex;align-items:center;gap:12px;border:1px solid #e4e9f2;padding:14px;margin:8px 0;border-radius:11px}.case-row:hover,.case-row.selected{background:#f1f6ff;border-color:#a8c3ed}.case-row.checked{border-left:3px solid #4776d0}.case-row .case-details strong{display:block;font-size:13px}.case-row .case-details small{display:block;margin-top:6px;color:#8190a3;font-size:11px}.run-selection{font-size:12px;color:#586b84;margin:8px 0}.run-selection strong{color:#2e65bb}
 .draft-section{margin-top:20px;padding-top:18px;border-top:1px solid #e7edf5}.draft-heading{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.draft-heading h4{margin:0;font-size:15px}.draft-card{border:1px solid #e4eaf4;border-radius:12px;margin:12px 0;padding:16px;background:#fff}.draft-card h5{margin:0 0 9px;font-size:13px;line-height:1.5}.draft-field{margin:10px 0}.draft-field strong{display:block;font-size:11px;color:#6e7f96;margin-bottom:5px}.draft-field p,.draft-field ol{margin:0;font-size:12px;line-height:1.65;overflow-wrap:anywhere;white-space:pre-wrap}.draft-note{background:#fff7e9;color:#7a5b26;padding:10px;border-radius:9px;font-size:11px;line-height:1.6;margin:8px 0}.draft-links{display:flex;flex-direction:column;gap:8px}
+.review-form{border-top:1px solid #e7edf5;margin-top:16px;padding-top:14px;display:grid;gap:12px}.review-form label{font-size:12px;color:#52647f;font-weight:650;display:grid;gap:5px}.review-form input,.review-form textarea,.review-form select{width:100%;font:inherit;font-size:12px;line-height:1.5;border:1px solid #cfd9e8;border-radius:8px;padding:10px;background:#fff;color:#22354d}.review-form textarea{resize:vertical;min-height:66px}.review-form .triage-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.review-actions{display:flex;gap:8px;flex-wrap:wrap}.review-actions button{padding:10px 13px;border-radius:8px;border:1px solid #cfd9e8;background:#fff;color:#365a91;font-size:12px;font-weight:650}.review-actions button.primary{background:#4776d0;color:#fff;border-color:#4776d0}.review-actions button:disabled{opacity:.45;cursor:not-allowed}.review-feedback{font-size:12px;line-height:1.6;color:#52647f}.review-feedback.error{color:#a33c3c}.review-feedback.success{color:#237953}.review-tag{color:#6c7c92;font-size:11px;margin:0}.review-disclaimer{background:#f7f9fd;border-radius:8px;color:#6b7c93;padding:10px;font-size:11px;line-height:1.6}
+@media(max-width:670px){.review-form .triage-grid{grid-template-columns:1fr}}
 </style></head><body>
 <div class="app-shell">
 <aside class="sidebar" aria-label="Main navigation">
@@ -183,33 +185,137 @@ async function showAssets(id, target){
       for(const draft of bugDrafts.drafts){
         const card=document.createElement('article');card.className='draft-card';
         card.append(element('h5',draft.title));
-        const note=element('div','Needs human review · An unexpected test result does not prove a product bug.');
-        note.className='draft-note';card.append(note);
-        function field(name,value){
-          const container=document.createElement('div');container.className='draft-field';
-          container.append(element('strong',name),element('p',value||'Not provided'));
-          card.append(container);
+        card.append(element('p','Generated draft · Awaiting human review. This test failure does not prove a product bug.'));
+        const form=document.createElement('form');form.className='review-form';
+        function field(label,initial,multiline=false){
+          const wrapper=document.createElement('label');wrapper.append(element('span',label));
+          const input=document.createElement(multiline?'textarea':'input');
+          if(multiline)input.rows=3;else input.type='text';
+          input.value=initial||'';
+          wrapper.append(input);form.append(wrapper);return input;
         }
-        field('Test ID',draft.testId);
-        field('Expected Result',draft.expected);
-        field('Actual Result / Error',draft.actual);
-        const steps=document.createElement('div');steps.className='draft-field';
-        steps.append(element('strong','Steps to Reproduce (from test specification)'));
-        const ordered=document.createElement('ol');
-        for(const step of draft.stepsToReproduce||[])ordered.append(element('li',step));
-        if(ordered.childElementCount)steps.append(ordered);
-        else steps.append(element('p','Verify reproduction steps manually.'));
-        card.append(steps);
+        function choice(label,options,initial,parent){
+          const wrapper=document.createElement('label');wrapper.append(element('span',label));
+          const select=document.createElement('select');
+          for(const [value,name] of options){
+            const option=document.createElement('option');option.value=value;option.textContent=name;select.append(option);
+          }
+          select.value=initial;wrapper.append(select);(parent||form).append(wrapper);return select;
+        }
+        const titleInput=field('Bug Title',draft.title);
+        const expectedInput=field('Expected Result',draft.expected,true);
+        const actualInput=field('Actual Result / Error',draft.actual,true);
+        const stepsInput=field('Steps to Reproduce (one step per line)',(draft.stepsToReproduce||[]).join('\n'),true);
+        const grid=document.createElement('div');grid.className='triage-grid';
+        const decision=choice('Triage Decision',[
+          ['needs-investigation','Needs Investigation'],
+          ['confirmed-bug','Confirmed Product Bug'],
+          ['not-a-bug','Not a Product Bug']
+        ],'needs-investigation',grid);
+        const status=choice('Review Status',[
+          ['needs-review','Needs Review'],['reviewed','Reviewed']
+        ],'needs-review',grid);
+        const severity=choice('Severity',[
+          ['unassigned','Unassigned'],['critical','Critical'],['high','High'],['medium','Medium'],['low','Low']
+        ],'unassigned',grid);
+        const priority=choice('Priority',[
+          ['unassigned','Unassigned'],['p0','P0'],['p1','P1'],['p2','P2'],['p3','P3']
+        ],'unassigned',grid);
+        form.append(grid);
+        const notes=field('Review Notes','',true);
+        const links=document.createElement('div');links.className='draft-links';
         if(draft.reportUrl){
-          const link=element('a','Open associated Playwright report ↗');
-          link.href=draft.reportUrl;link.target='_blank';link.rel='noopener noreferrer';link.className='asset-link';card.append(link);
+          const link=element('a','Open Playwright HTML Report ↗');link.href=draft.reportUrl;
+          link.target='_blank';link.rel='noopener noreferrer';link.className='asset-link';links.append(link);
         }
         if(draft.evidenceLinks?.length){
-          card.append(element('div','Run-level Evidence (not yet mapped to this specific test):'));
+          links.append(element('p','Run-level Evidence: links are not mapped to an individual test.'));
           for(const file of draft.evidenceLinks){
-            const link=element('a',file.name);link.className='asset-link';link.href=file.url;link.target='_blank';link.rel='noopener noreferrer';card.append(link);
+            const link=element('a',file.name);link.href=file.url;link.target='_blank';
+            link.rel='noopener noreferrer';link.className='asset-link';links.append(link);
           }
         }
+        form.append(links);
+        const disclaimer=element('div','A confirmed result means QA triage has confirmed a product bug; saving a review does not file a ticket.');
+        disclaimer.className='review-disclaimer';form.append(disclaimer);
+        const actions=document.createElement('div');actions.className='review-actions';
+        const save=document.createElement('button');save.type='submit';save.textContent='Save Review';save.className='primary';
+        const exportButton=document.createElement('button');exportButton.type='button';exportButton.textContent='Export Bug Report (.txt)';exportButton.disabled=true;
+        const jira=document.createElement('button');jira.type='button';jira.textContent='Jira Integration (Coming Soon)';jira.disabled=true;jira.title='Placeholder only — no Jira integration is implemented';
+        actions.append(save,exportButton,jira);form.append(actions);
+        const feedback=element('p','Loading saved review...');feedback.className='review-feedback';form.append(feedback);
+        card.append(form);
+        const reviewEndpoint='/api/runs/'+encodeURIComponent(run.id)+'/drafts/'+(Number(draft.id.split(':').at(-1)))+'/review';
+        let revision=0,savedReview=null,dirty=false;
+        const editFields=[titleInput,expectedInput,actualInput,stepsInput,decision,status,severity,priority,notes];
+        function payload(){
+          return {
+            title:titleInput.value,expected:expectedInput.value,actual:actualInput.value,
+            stepsToReproduce:stepsInput.value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean),
+            triageDecision:decision.value,reviewStatus:status.value,severity:severity.value,
+            priority:priority.value,reviewNotes:notes.value,revision
+          };
+        }
+        function populate(review){
+          titleInput.value=review.title;expectedInput.value=review.expected;actualInput.value=review.actual;
+          stepsInput.value=review.stepsToReproduce.join('\n');
+          decision.value=review.triageDecision;status.value=review.reviewStatus;
+          severity.value=review.severity;priority.value=review.priority;notes.value=review.reviewNotes;
+          revision=review.revision;dirty=false;exportButton.disabled=false;
+        }
+        for(const input of editFields)input.addEventListener('input',()=>{
+          dirty=true;exportButton.disabled=true;
+          feedback.textContent='Unsaved changes';feedback.className='review-feedback';
+        });
+        fetch(reviewEndpoint,{cache:'no-store'}).then(async response=>{
+          if(!response.ok)throw Error('HTTP '+response.status);
+          return response.json();
+        }).then(data=>{
+          if(!form.isConnected||dirty)return;
+          if(data.review){populate(data.review);feedback.textContent='Previously saved · '+new Date(data.review.updatedAt).toLocaleString();}
+          else feedback.textContent='No saved review yet. Edit the fields and save.';
+        }).catch(err=>{feedback.textContent='Unable to load saved review: '+err.message;feedback.className='review-feedback error';});
+        form.addEventListener('submit',async event=>{
+          event.preventDefault();
+          save.disabled=true;feedback.textContent='Saving...';
+          try{
+            const response=await fetch(reviewEndpoint,{
+              method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload())
+            });
+            const data=await response.json();
+            if(!response.ok)throw Error(data.error||'HTTP '+response.status);
+            savedReview=data.review;populate(data.review);
+            feedback.textContent='Review saved successfully · '+new Date(data.review.updatedAt).toLocaleString();
+            feedback.className='review-feedback success';
+          }catch(err){feedback.textContent='Save failed: '+err.message;feedback.className='review-feedback error';}
+          finally{save.disabled=false;}
+        });
+        exportButton.addEventListener('click',()=>{
+          if(!savedReview||dirty)return;
+          const lines=[
+            'QA Bug Review Report','===================',
+            'Run ID: '+draft.runId,'Test ID: '+draft.testId,
+            'Review Status: '+savedReview.reviewStatus,
+            'Triage Decision: '+savedReview.triageDecision,
+            'Severity: '+savedReview.severity,'Priority: '+savedReview.priority,
+            'Title: '+savedReview.title,'',
+            'Expected Result:',savedReview.expected,'',
+            'Actual Result:',savedReview.actual,'',
+            'Steps to Reproduce:',
+            ...savedReview.stepsToReproduce.map((step,i)=>(i+1)+'. '+step),'',
+            'Review Notes:',savedReview.reviewNotes,'',
+            'Playwright Report:',draft.reportUrl||'Unavailable','',
+            'Run-level Evidence (not test-specific):',
+            ...(draft.evidenceLinks||[]).map(file=>file.name+' — '+file.url),'',
+            'Reviewed At: '+savedReview.updatedAt,
+            'Note: This export does not create a Jira ticket.'
+          ];
+          const blob=new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
+          const url=URL.createObjectURL(blob);
+          const anchor=document.createElement('a');anchor.href=url;anchor.download='bug-review-'+draft.testId+'-'+draft.runId.slice(0,8)+'.txt';
+          document.body.append(anchor);anchor.click();anchor.remove();
+          setTimeout(()=>URL.revokeObjectURL(url),1000);
+        });
         draftSection.append(card);
       }
     }

@@ -108,7 +108,7 @@ function artifactPath(id, kind, parts) {
   if (!full.startsWith(base + path.sep) || !fs.existsSync(full) || !fs.statSync(full).isFile()) return null;
   const ext = path.extname(full).toLowerCase();
   if (kind === 'evidence' && !allowedExtensions.has(ext)) return null;
-  if (kind === 'report' && !new Set(['.html', '.js', '.css', '.json', '.png', '.svg', '.woff', '.woff2', '.webp', '.zip', '.map']).has(ext)) return null;
+  if (kind === 'report' && !new Set(['.html', '.js', '.css', '.json', '.png', '.svg', '.woff', '.woff2', '.webp', '.webm', '.zip', '.map']).has(ext)) return null;
   return full;
 }
 module.exports = { launch, snapshot, list, read, evidence, artifactPath };

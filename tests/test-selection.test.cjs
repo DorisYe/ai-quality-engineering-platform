@@ -18,7 +18,7 @@ test('all and evidence-check remain distinct execution modes', () => {
   assert.deepEqual(prepareSelection('evidence-check'), { selection: 'evidence-check', grep: null });
 });
 test('rejects empty, unknown, duplicate and malformed selections', () => {
-  for (const invalid of [[], ['TC-999'], ['TC-001', 'TC-001'], ['TC-001', '--config=evil'], null, 5, {}, ['TC-001', 7], ['TC-001', 'TC-002', 'TC-003', 'TC-004', 'TC-005', 'TC-006']]) {
+  for (const invalid of [[], ['TC-999'], ['TC-001', 'TC-001'], ['TC-001', '--config=evil'], null, 5, {}, ['TC-001', 7], ['TC-001', 'TC-002', 'TC-003', 'TC-004', 'TC-005', 'TC-006', 'TC-007']]) {
     const result = prepareSelection(invalid);
     assert.equal(result.code, 400, JSON.stringify(invalid));
     assert.equal(result.grep, undefined);

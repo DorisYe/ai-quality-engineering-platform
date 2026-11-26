@@ -6,6 +6,7 @@ on:
       - main
       - feature/m5-1-github-actions
       - feature/m5-2-ci-artifacts
+      - feature/m5-3-quality-gates
   pull_request:
   workflow_dispatch:
     inputs:
@@ -23,7 +24,7 @@ permissions:
 
 jobs:
   core-tests:
-    name: Unit Tests + Playwright Core Regression
+    name: Required Quality Gates (Static + Unit + Core Playwright)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -43,6 +44,9 @@ jobs:
       # npm ci can replace npm install once a verified lockfile is checked in.
       - name: Install Node.js dependencies
         run: npm install --no-audit --no-fund
+
+      - name: Static syntax checks (Backend + QA Portal)
+        run: npm run check:static
 
       - name: Install Playwright Chromium and dependencies
         run: npx playwright install --with-deps chromium

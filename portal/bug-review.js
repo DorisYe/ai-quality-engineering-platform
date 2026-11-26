@@ -19,7 +19,10 @@ function getReviews(runId) {
   try {
     const value = JSON.parse(fs.readFileSync(reviewFile(runId), 'utf8'));
     return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-  } catch { return {}; }
+  } catch (error) {
+    if (error.code === 'ENOENT') return {};
+    throw error; // Never overwrite a corrupt or unreadable review file silently.
+  }
 }
 function getReview(run, draftIndex) {
   const draft = draftFor(run, draftIndex);
@@ -47,7 +50,9 @@ function saveReview(run, index, body) {
   if (!draft) return { error: 'Bug Draft not found', code: 404 };
   const invalid = validateReview(body);
   if (invalid) return { ...invalid, code: 400 };
-  const all = getReviews(run.id);
+  let all;
+  try { all = getReviews(run.id); }
+  catch (error) { return { error: 'Unable to read existing reviews: ' + error.message, code: 500 }; }
   const previous = all[draft.id];
   const revision = previous?.revision || 0;
   if (revision !== body.revision) return { error: 'Review was updated elsewhere; reload before saving', code: 409 };

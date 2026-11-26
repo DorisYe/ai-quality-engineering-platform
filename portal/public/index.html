@@ -60,7 +60,7 @@ a{color:#386ab5}a:hover{text-decoration:underline}
 <header class="topbar" id="overview"><small>Quality Engineering Workspace</small><h1>QA Management Portal</h1><p>Test inventory · Execution · Reporting</p></header>
 <main class="layout">
 <div class="summary"><div class="metric"><span>Test Cases</span><strong id="count">—</strong></div><div class="metric"><span>Automated</span><strong id="automated">—</strong></div><div class="metric"><span>Current Phase</span><strong>M3.6 · UI Refresh</strong></div></div>
-<div class="demo-banner"><strong>Controlled Defect Demo — TC-006</strong>Reset Filters intentionally leaves the Status filter unchanged. TC-006 is expected to FAIL for the full Failure Detection → Bug Draft → Human Review → Export demonstration. Run All will report 5 Passed / 1 Failed. Use TC-001–TC-005 for a clean regression run.</div>
+
 <div class="grid">
 <section class="panel" id="test-library"><div class="heading"><h2>Test Library</h2><input aria-label="Search test cases" id="search" placeholder="Search ID, title or category..."></div><p class="muted">Check one or more tests to run. Click a test title to inspect its specification.</p><div class="selection-toolbar"><label><input id="select-all" type="checkbox"> Select All</label><span id="selection-count" class="muted" aria-live="polite">0 selected</span><button id="clear-selection" type="button" class="tag" style="border:0;cursor:pointer">Clear</button></div><div id="cases" aria-live="polite">Loading test cases...</div></section>
 <aside class="panel" id="test-specification"><div class="heading"><h2>Test Specification</h2><span class="tag" id="priority">—</span></div><div id="details" aria-live="polite"><p class="muted">Select a case on the left to view its specification.</p></div></aside>
@@ -98,6 +98,14 @@ function renderDetails(item){
   const ol=document.createElement('ol');
   for(const step of item.steps)ol.append(element('li',step));
   details.append(ol,element('h4','Expected result'),element('p',item.expected));
+  if(item.id==='TC-006'){
+    const notice=document.createElement('div');
+    notice.className='demo-banner';
+    notice.style.margin='16px 0 0';
+    notice.append(element('strong','Controlled Defect Demo — TC-006'));
+    notice.append(element('span','Reset Filters intentionally leaves the Status filter unchanged. TC-006 is expected to FAIL for the full Failure Detection → Bug Draft → Human Review → Export demonstration. Run All will report 5 Passed / 1 Failed. Use TC-001–TC-005 for a clean regression run.'));
+    details.append(notice);
+  }
   renderList();
 }
 function renderList(){

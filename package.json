@@ -10,9 +10,9 @@
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "portal": "node portal/server.js",
-    "test:unit": "node --test",
     "test:core": "playwright test --grep \"TC-00[1-5]:\"",
-    "check:static": "node --check backend/server.js && node --check backend/database.js && node --check portal/server.js && node --check portal/test-runner.js && node --check portal/result-parser.js && node --check portal/failure-detection.js && node --check portal/failure-format.js && node --check portal/bug-drafts.js && node --check portal/bug-review.js && node --check portal/test-selection.js && node --check portal/test-cases.js"
+    "check:static": "node --check backend/server.js && node --check backend/database.js && node --check portal/server.js && node --check portal/test-runner.js && node --check portal/result-parser.js && node --check portal/failure-detection.js && node --check portal/failure-format.js && node --check portal/bug-drafts.js && node --check portal/bug-review.js && node --check portal/test-selection.js && node --check portal/test-cases.js",
+    "test:unit-integration": "node --test"
   },
   "dependencies": {
     "express": "^4.21.2",

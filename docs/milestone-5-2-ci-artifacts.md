@@ -62,4 +62,14 @@ If the branch already exists locally, `git switch feature/m5-2-ci-artifacts` and
 
 **Normal path: ACCEPTED (owner-confirmed, 2026-11-26):** all five checks passed, including a downloadable HTML report showing five passing core tests. **Failure path: PENDING** until the manual controlled-defect run proves Screenshot, Video, Trace and failed HTML report are downloadable. Do not record M5.2 as accepted based on YAML review alone.
 
-M5.3: automated quality gates and static checks. M5.4: final PR validation and branch protection where supported.
+Next: M5.3 automated quality gates; M5.4 GitHub Actions history in QA Portal; M5.5 final PR integration and branch protection.
+
+## Final acceptance record — 2026-11-26
+
+**Status: ACCEPTED (owner-confirmed validation).**
+
+The project owner confirmed all five normal-path checks passed: GitHub Actions succeeded, required tests passed, the Playwright HTML report artifact was downloadable, and it showed five passing core tests (TC-001–TC-005).
+
+For the failed-run path, a temporary validation branch `validation/m5-2-failure-evidence` (commit `4b54574`) was configured to run only the intentionally failing TC-006 through an automatically triggered GitHub Actions push workflow. The project owner confirmed the complete checklist: expected TC-006 Status Filter failure, a red workflow conclusion, accessible failed HTML report, and downloadable/usable Screenshot (.png), Video (.webm), and Trace (.zip) evidence. This test was intentionally restricted to the temporary validation branch; normal M5.2 CI continues to require the five passing core tests.
+
+These results are recorded from the owner's confirmation of actual runs and downloaded artifacts; this documentation update does not itself re-run the CI workflow. Artifact retention remains seven days. The temporary validation branch must **not** be merged into production or normal core CI; keep it isolated and remove it when no longer needed.

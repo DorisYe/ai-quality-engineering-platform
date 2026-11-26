@@ -25,15 +25,27 @@ GitHub Actions artifacts are download bundles, **not automatically hosted web pa
 4. Unzip, open `index.html` and check that all five TC cases are reported as passed.
 5. The **playwright-failure-evidence** artifact should **not** normally appear on a green run; failure-only evidence is not expected.
 
-### Failure path — verification required before final M5.2 acceptance
+### Failure path — manual controlled-defect validation
 
-1. In a temporary test-only branch or approved isolated fixture, cause a **core** Playwright test to fail without changing the permanent TC-006 demo. A real unexpected failure may also be used.
-2. Confirm the workflow is red and the artifact upload steps still run.
-3. Confirm the HTML report downloads and describes the failure.
-4. Confirm `playwright-failure-evidence` can be downloaded and contains Playwright failure artifacts (when generated), including Screenshot, Video and Trace.
-5. Restore/discard the temporary change so clean CI remains passing.
+The owner confirmed all five normal CI acceptance checks passed on 2026-11-26. The next step is a **deliberately failing, manual-only** run.
 
-Do not infer failure artifact success solely from green runs: the failure-only upload is not executed there. Also note that Node unit test failures can prevent Playwright from running, so there may be no Playwright evidence in that case.
+Workflow dispatch now supports a `test_mode` choice:
+
+- `core` (default): run standard TC-001–TC-005 regression.
+- `controlled-defect` (manual selection only): run **TC-006 alone**, whose Reset Filters failure is intentionally preserved. Pushes and pull requests always use the clean core suite.
+
+Steps:
+
+1. Navigate to GitHub Actions, select the workflow (its displayed name may still be the previous **M5.1 Core QA CI**), click **Run workflow**.
+2. Select branch `feature/m5-2-ci-artifacts` and choose **controlled-defect** for the `test_mode` input; trigger it.
+3. Confirm the Node tests still pass and Playwright **runs TC-006 alone**. The Playwright step and overall workflow should appear **red/failed by design**, because the failure is genuine rather than suppressed.
+4. On the failed Run Summary, download **playwright-html-report** and **playwright-failure-evidence** from **Artifacts**. Confirm the HTML report shows TC-006 failed specifically on Status Filter Reset (not a setup or connection error).
+5. Extract the failure evidence archive and confirm that Screenshot (`.png`), Video (`.webm`) and Trace (`.zip`) exist and can be opened. A trace can be viewed with Playwright Trace Viewer; a video can be opened in a compatible browser/media player.
+6. Run a normal `core` mode again (or inspect an unaffected push/PR run) to verify CI stays green with TC-001–TC-005.
+
+**Acceptance semantics:** A red manual controlled-defect run is the *expected* result for this special test and does not mean the normal core CI is broken. Do not mark the overall CI policy as successful from a failed run; check that the artifacts and failure reason are correct. If TC-006 unexpectedly passes, or evidence files are missing, investigate rather than treating a red run alone as proof.
+
+Do not infer failure artifact success solely from green runs: failure-only upload is not executed there.
 
 ### Optional local smoke checks
 
@@ -48,6 +60,6 @@ If the branch already exists locally, `git switch feature/m5-2-ci-artifacts` and
 
 ## Acceptance status
 
-**Pending:** workflow committed; artifact presence, report readability and fail-path evidence must be confirmed from actual GitHub Actions executions. Do not record M5.2 as accepted based on YAML review alone.
+**Normal path: ACCEPTED (owner-confirmed, 2026-11-26):** all five checks passed, including a downloadable HTML report showing five passing core tests. **Failure path: PENDING** until the manual controlled-defect run proves Screenshot, Video, Trace and failed HTML report are downloadable. Do not record M5.2 as accepted based on YAML review alone.
 
 M5.3: automated quality gates and static checks. M5.4: final PR validation and branch protection where supported.

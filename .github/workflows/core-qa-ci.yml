@@ -8,6 +8,15 @@ on:
       - feature/m5-2-ci-artifacts
   pull_request:
   workflow_dispatch:
+    inputs:
+      test_mode:
+        description: 'Select core CI or an isolated, intentionally failing artifact check'
+        required: true
+        default: core
+        type: choice
+        options:
+          - core
+          - controlled-defect
 
 permissions:
   contents: read
@@ -44,7 +53,15 @@ jobs:
       # TC-006 is a deliberately broken AUT demonstration; DIAG-001 is separate.
       # Required CI regression includes only TC-001 through TC-005.
       - name: Run Playwright core regression (TC-001 to TC-005)
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.test_mode != 'controlled-defect' }}
         run: npm run test:core
+
+      # Manual-only opt-in to validate HTML report + screenshot/video/trace uploads.
+      # This deliberately fails because the AUT has the known TC-006 Reset Filters defect.
+      # It never runs for pushes/PRs, and normal CI keeps its five clean tests.
+      - name: Controlled defect artifact validation (TC-006, expected FAIL)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.test_mode == 'controlled-defect' }}
+        run: npx playwright test --grep "TC-006:"
 
       # 'always()' preserves diagnostic files even if core regression fails.
       # Successful runs have an HTML report; failure artifacts may be absent.

@@ -14,7 +14,7 @@ Triggers: push to `feature/m5-1-github-actions` or `main`, all pull requests, an
 - Use Node.js 22 on Ubuntu runner.
 - `npm install --no-audit --no-fund`.
 - `npx playwright install --with-deps chromium`.
-- `npm run test:unit` (all `tests/*.test.cjs`).
+- `npm run test:unit` (`node --test`, which discovers the existing `*.test.cjs` files on Windows and Linux).
 - `npm run test:core` (Playwright `--grep "TC-00[1-5]:"`).
 
 The Playwright webServer starts the AUT itself on port 3100. Do not launch the AUT separately in CI. The Node unit tests run directly, not through the Portal.

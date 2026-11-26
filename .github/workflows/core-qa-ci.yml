@@ -7,6 +7,7 @@ on:
       - feature/m5-1-github-actions
       - feature/m5-2-ci-artifacts
       - feature/m5-3-quality-gates
+      - validation/m5-3-static-gate-failure
   pull_request:
   workflow_dispatch:
     inputs:

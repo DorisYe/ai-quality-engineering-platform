@@ -50,4 +50,14 @@ If the branch is already local, use `git switch feature/m4-2-bug-drafts` and `gi
 - Manual edits, triage decisions and draft-to-defect workflow belong to **M4.3**, not M4.2.
 - The generated draft may describe test, environment, timing, or product issues; a QA reviewer must investigate before filing.
 - No additional third-party dependencies.
-- M4.2 is **not accepted** until local acceptance is completed.
+- M4.2 was **accepted on 2026-11-25** after owner-confirmed local acceptance. See below.
+
+## Acceptance record — 2026-11-25
+
+**Status: ACCEPTED (owner-reported local validation: 8/8 PASS).**
+
+The project owner confirmed all eight local acceptance checks above passed in their Windows environment. This confirms the unit tests, unchanged M4.1/M3.6 workflows, clean Run All, excluded intentional DIAG-001 run, historical-run handling, run API draft fields, test selection, HTML Reports and draft metadata checks according to the user's report.
+
+This acceptance record reflects the owner's reported testing; it is not a claim that GitHub/CI independently executed the tests. The M4.2 branch remains separate from `feature/m4-rebuild` until an explicit merge step.
+
+**Next milestone (proposed): M4.3 — Human Review & Triage.** Design and acceptance criteria to be agreed before implementation.

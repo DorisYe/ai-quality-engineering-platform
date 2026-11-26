@@ -59,3 +59,11 @@ If the branch already exists locally, use `git switch feature/m5-1-github-action
 The user must confirm the actual GitHub Actions execution. Committing a workflow is not evidence that GitHub successfully ran it. No assertion of CI PASS is made before examining the workflow logs or user's acceptance.
 
 M5.2: CI reports and artifact uploading; M5.3: quality-gate refinement and static checks; M5.4: PR validation and branch protection where supported.
+
+## Acceptance record — 2026-11-26
+
+**Status: ACCEPTED (owner-reported local tests and GitHub Actions run evidence).**
+
+The owner confirmed locally that both `npm.cmd run test:unit` and `npm.cmd run test:core` completed successfully. The owner also supplied a GitHub Actions screenshot showing four successful `M5.1 Core QA CI` workflow runs on `feature/m5-1-github-actions` (runs #1–#4), including the latest commit `acc72ec` (run #4, approximately 39 seconds). This validates the required M5.1 automated CI execution and clean core regression workflow at the level visible in those results. The screenshot establishes overall success but does not individually expose logs of each workflow step; the workflow definition specifies the required Node unit and Playwright core test steps.
+
+M5.2 will add persistent GitHub Actions test reports and failure evidence artifacts. Branch reconciliation with the earlier M4 rebuild/main remains a separate integration task; no merges are implied by this acceptance.

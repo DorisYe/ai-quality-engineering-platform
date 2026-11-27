@@ -28,6 +28,13 @@ export class EventsPage {
     await this.page.locator('#status-filter').selectOption(value);
   }
 
+  async resetFilters() {
+    await this.page.getByRole('button', { name: 'Reset Filters' }).click();
+  }
+
+  get severityFilter(): Locator { return this.page.locator('#severity-filter'); }
+  get statusFilter(): Locator { return this.page.locator('#status-filter'); }
+
   get visibleRows(): Locator {
     return this.page.locator('#event-list tr[data-event-id]');
   }

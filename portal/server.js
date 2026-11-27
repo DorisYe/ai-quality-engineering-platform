@@ -1,25 +1,13 @@
 const express = require('express');
 const path = require('node:path');
-const fs = require('node:fs');
 const cases = require('./test-cases');
 const runner = require('./test-runner');
-const { createStore } = require('./bug-review-store');
-const { suggest } = require('./failure-triage');
-const { analyze } = require('./ai-failure-analysis');
-const { mockAnalyze } = require('./mock-ai-analysis');
-const { preview, extractTrace } = require('./evidence-intelligence');
-const { associateAssertion } = require('./assertion-trace-correlation');
-const { mapEvidence } = require('./test-evidence-map');
-const { mapAttemptFailures } = require('./attempt-failure-map');
-const { selectMappedTraces } = require('./trace-selection');
-const { summarizeAttemptEvidence } = require('./verified-attempt-summary');
-const aiInProgress = new Set();
-const reviews = createStore(path.join(__dirname, '..', 'data', 'qa-results'));
+const bugReview = require('./bug-review');
 const app = express();
 app.disable('x-powered-by');
-app.use(express.json({ limit: '4kb' }));
+app.use(express.json({ limit: '32kb' }));
 app.use((req, res, next) => {
-  if (!['POST', 'PATCH'].includes(req.method)) return next();
+  if (!['POST','PUT'].includes(req.method)) return next();
   const origin = req.headers.origin;
   if (origin && origin !== 'http://127.0.0.1:' + (process.env.QA_PORT || 3200)) return res.status(403).json({ error: 'Cross-origin requests are not allowed' });
   next();
@@ -32,78 +20,6 @@ app.get('/api/test-cases/:id', (req, res) => {
 });
 app.get('/api/runs', (_req, res) => res.json({ runs: runner.list() }));
 
-app.get('/api/runs/:id/bug-drafts', (req, res) => {
-  const run = runner.read(req.params.id);
-  if (!run) return res.status(404).json({ error: 'Run not found' });
-  return res.json({ drafts: reviews.list(req.params.id, runner.read, runner.evidence).map(draft => ({ ...draft, triageSuggestion: suggest(draft) })) });
-});
-app.post('/api/runs/:id/bug-drafts/:draftId/ai-analysis', async (req, res) => {
-  const run = runner.read(req.params.id);
-  if (!run) return res.status(404).json({error:'Run not found'});
-  const draft = reviews.list(req.params.id, runner.read, runner.evidence).find(d => d.id === req.params.draftId);
-  if (!draft) return res.status(404).json({error:'Bug draft not found'});
-  if (process.env.QA_AI_MOCK === '1' && run.selection === 'fixture-review') {
-    return res.json({ analysis: mockAnalyze(draft) });
-  }
-  if (!process.env.OPENAI_API_KEY) return res.status(503).json({error:'AI disabled: configure OPENAI_API_KEY locally'});
-  const key = req.params.id + ':' + req.params.draftId;
-  if (aiInProgress.has(key)) return res.status(409).json({error:'Analysis already in progress'});
-  aiInProgress.add(key);
-  try {
-    const analysis = await analyze(draft);
-    return res.json({analysis});
-  } catch (err) {
-    return res.status(502).json({error:err.name === 'AbortError'?'AI request timed out':err.message});
-  } finally { aiInProgress.delete(key); }
-});
-app.patch('/api/runs/:id/bug-drafts/:draftId', (req, res) => {
-  const result = reviews.update(req.params.id, req.params.draftId, req.body, runner.read, runner.evidence);
-  return result.error ? res.status(result.code).json({ error: result.error }) : res.json(result);
-});
-app.get('/api/runs/:id/evidence-preview', (req,res) => {
- const run=runner.read(req.params.id);
- if(!run)return res.status(404).json({error:'Run not found'});
- const items=runner.evidence(req.params.id);
- const result=preview(run,items);
- result.traceDiagnostics=[];
- result.timeline=[];
- result.failureCorrelations=[];
- result.perAttemptTraces=[];
- try {
-  const dataRoot=path.join(__dirname,'..','data','qa-results',req.params.id);
-  const report=JSON.parse(fs.readFileSync(path.join(dataRoot,'results.json'),'utf8'));
-  result.testEvidenceMap=mapEvidence(report,items,path.join(dataRoot,'artifacts'));
-  result.attemptFailures=mapAttemptFailures(report,result.testEvidenceMap);
- } catch {
-  result.testEvidenceMap={mapped:[],unmapped:[],source:'playwright-json-reporter',mappingMethod:'attachment-path',verifiedOwnership:false,reason:'Reporter data unavailable (possibly an older or synthetic run)'};
-  result.attemptFailures={source:'playwright-json-reporter',attempts:[],association:'unavailable',assertionCallIdMatched:false};
- }
- const selection=selectMappedTraces(result.testEvidenceMap,items);
- const parsedTraces=[];
- result.unmappedTraceCount=selection.unowned;
- for(const link of selection.selected) {
-  const local=runner.artifactPath(req.params.id,'evidence',link.evidenceName.split('/'));
-  if(!local)continue;
-  const parsed=extractTrace(local);
-  parsedTraces.push(parsed);
-  const scope={testKey:link.testKey,testId:link.testId,attempt:link.attempt,evidenceName:link.evidenceName,
-    actions:parsed.actions,timeline:parsed.timeline,correlations:parsed.correlations,
-    diagnostics:{traceEntries:parsed.traceEntries,beforeEvents:parsed.beforeEvents,completedEvents:parsed.completedEvents,failedEvents:parsed.failedEvents,reason:parsed.reason}};
-  result.perAttemptTraces.push(scope);
-  result.actions.push(...parsed.actions);
-  result.timeline.push(...parsed.timeline);
-  result.failureCorrelations.push(...parsed.correlations);
-  result.traceDiagnostics.push(scope.diagnostics);
- }
- result.actions=result.actions.slice(0,40);
- result.timeline=result.timeline.slice(0,40);
- result.failureCorrelations=result.failureCorrelations.slice(0,10);
- result.correlationStatus=result.failureCorrelations.length?'trace-errors-found':result.traceDiagnostics.some(d=>d.failedEvents>0)?'error-without-matched-action':'no-matched-trace-failure';
- result.assertionTrace=associateAssertion(run,parsedTraces);
- result.traceSelectionPolicy='reporter-mapped-test-attempt-only';
- result.verifiedAttemptSummary=summarizeAttemptEvidence(run,result.attemptFailures,result.perAttemptTraces);
- return res.json({preview:result});
-});
 app.get('/api/runs/:id/evidence', (req, res) => res.json({evidence: runner.evidence(req.params.id)}));
 app.get(/^\/api\/runs\/([0-9a-f-]+)\/(report|evidence)\/(.+)$/i, (req, res) => {
   const file = runner.artifactPath(req.params[0], req.params[1], req.params[2].split('/'));
@@ -114,6 +30,17 @@ app.get(/^\/api\/runs\/([0-9a-f-]+)\/(report|evidence)\/(.+)$/i, (req, res) => {
 });
 app.get('/api/runs/current', (_req, res) => res.json({ run: runner.snapshot() }));
 app.get('/api/runs/:id', (req, res) => { const run = runner.read(req.params.id); return run ? res.json({run}) : res.status(404).json({error:'Run not found'}); });
+// Human reviews are separate from generated run.json drafts.
+app.get('/api/runs/:id/drafts/:index/review', (req, res) => {
+  const run = runner.read(req.params.id);
+  if (!bugReview.draftFor(run, req.params.index)) return res.status(404).json({ error:'Bug Draft not found' });
+  return res.json({ review:bugReview.getReview(run, req.params.index) });
+});
+app.put('/api/runs/:id/drafts/:index/review', (req, res) => {
+  const run = runner.read(req.params.id);
+  const outcome = bugReview.saveReview(run, req.params.index, req.body);
+  return outcome.error ? res.status(outcome.code).json({ error:outcome.error }) : res.json(outcome);
+});
 app.post('/api/runs', (req, res) => {
   const selection = req.body && req.body.selection;
   const result = runner.launch(selection);
@@ -121,4 +48,4 @@ app.post('/api/runs', (req, res) => {
 });
 app.use(express.static(path.join(__dirname, 'public')));
 const port = Number(process.env.QA_PORT || 3200);
-app.listen(port, '127.0.0.1', () => console.log('QA Portal (M4.4) running at http://127.0.0.1:' + port));
+app.listen(port, '127.0.0.1', () => console.log('QA Portal running at http://127.0.0.1:' + port));

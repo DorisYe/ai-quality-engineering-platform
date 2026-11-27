@@ -113,3 +113,33 @@ test('TC-005: invalid event payload is rejected without being stored', async ({ 
   const events = await eventsResponse.json() as EventRecord[];
   expect(events.find(event => event.source === uniqueSource)).toBeUndefined();
 });
+
+/**
+ * TC-006 — CONTROLLED DEMO DEFECT (intentionally failing)
+ * Reset Filters should restore BOTH dropdowns to All.
+ * The AUT deliberately resets only Severity so the QA Portal can demonstrate
+ * Failure Detection -> Bug Draft -> Human Review -> Export with real evidence.
+ * This is a known demo failure, not an unexpected production regression.
+ */
+test('TC-006: Reset Filters restores Severity and Status to All', async ({ page, request }) => {
+  const critical = await createEvent(request, 'Critical', 'DemoResetCritical');
+  const acknowledged = await createEvent(request, 'Warning', 'DemoResetAcknowledged');
+  const acknowledgement = await request.post('/api/events/' + acknowledged.id + '/acknowledge');
+  expect(acknowledgement.ok()).toBeTruthy();
+
+  const dashboard = new EventsPage(page);
+  await dashboard.open();
+  await dashboard.expectEvent(critical.id);
+  await dashboard.expectEvent(acknowledged.id);
+
+  await dashboard.filterSeverity('Critical');
+  await dashboard.filterStatus('Active');
+  await expect(dashboard.row(critical.id)).toBeVisible();
+  await expect(dashboard.row(acknowledged.id)).toHaveCount(0);
+
+  await dashboard.resetFilters();
+  await expect(dashboard.severityFilter).toHaveValue('All');
+  // Expected failure: AUT leaves Status as 'Active', rather than 'All'.
+  await expect(dashboard.statusFilter).toHaveValue('All');
+  await expect(dashboard.row(acknowledged.id)).toBeVisible();
+});

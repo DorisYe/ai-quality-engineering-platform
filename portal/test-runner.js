@@ -3,11 +3,13 @@ const path = require('node:path');
 const { spawn } = require('node:child_process');
 const crypto = require('node:crypto');
 const { summarize } = require('./result-parser');
+const { detectFailures } = require('./failure-detection');
+const { generateBugDrafts } = require('./bug-drafts');
+const { prepareSelection } = require('./test-selection');
 const cases = require('./test-cases');
 const root = path.resolve(__dirname, '..');
 const resultsRoot = path.join(root, 'data', 'qa-results');
 const playwrightCLI = path.join(root, 'node_modules', '@playwright', 'test', 'cli.js');
-const knownIds = new Set(cases.map(item => item.id));
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const allowedExtensions = new Set(['.png', '.jpg', '.jpeg', '.webm', '.zip', '.txt']);
 let current = null;
@@ -15,8 +17,8 @@ fs.mkdirSync(resultsRoot, { recursive: true });
 
 function publicRun(run) {
   if (!run) return null;
-  const { id, selection, status, startedAt, finishedAt, exitCode, output, error, summary } = run;
-  return { id, selection, status, startedAt, finishedAt, exitCode, output, error, summary, reportUrl: fs.existsSync(path.join(resultsRoot, id, 'report', 'index.html')) ? '/api/runs/' + id + '/report/index.html' : null };
+  const { id, selection, status, startedAt, finishedAt, exitCode, output, error, summary, failureDetection, bugDrafts } = run;
+  return { id, selection, status, startedAt, finishedAt, exitCode, output, error, summary, failureDetection, bugDrafts, reportUrl: fs.existsSync(path.join(resultsRoot, id, 'report', 'index.html')) ? '/api/runs/' + id + '/report/index.html' : null };
 }
 function runDirectory(id) { return path.join(resultsRoot, id); }
 function save(run) {
@@ -54,14 +56,16 @@ function evidence(id) {
 }
 function launch(selection) {
   if (current && current.status === 'running') return { error: 'A test run is already in progress', code: 409 };
-  if (selection !== 'all' && selection !== 'evidence-check' && !knownIds.has(selection)) return { error: 'Unknown test case', code: 400 };
-  const run = { id: crypto.randomUUID(), selection, status: 'running', startedAt: new Date().toISOString(), finishedAt: null, exitCode: null, output: '', error: null, summary: null };
+  const prepared = prepareSelection(selection);
+  if (prepared.error) return prepared;
+  selection = prepared.selection;
+  const run = { id: crypto.randomUUID(), selection, status: 'running', startedAt: new Date().toISOString(), finishedAt: null, exitCode: null, output: '', error: null, summary: null, failureDetection: null, bugDrafts: null };
   current = run;
   const folder = runDirectory(run.id);
   fs.mkdirSync(folder, { recursive: true });
   save(run);
   const args = [playwrightCLI, 'test'];
-  if (selection !== 'all' && selection !== 'evidence-check') args.push('--grep', selection + ':');
+  if (prepared.grep) args.push('--grep', prepared.grep);
   const proc = spawn(process.execPath, args, {
     cwd: root, shell: false, windowsHide: true,
     env: { ...process.env, CI: '1', FORCE_COLOR: '0',
@@ -82,11 +86,16 @@ function launch(selection) {
     if (signal) run.error = 'Process terminated: ' + signal;
     try {
       run.summary = summarize(JSON.parse(fs.readFileSync(path.join(folder, 'results.json'), 'utf8')));
+      run.failureDetection = detectFailures(run.summary, selection);
       if (!run.summary.total && run.status === 'passed') { run.status = 'failed'; run.error = 'No test results in JSON report'; }
     } catch (err) {
+      run.failureDetection = detectFailures(null, selection);
       run.error = 'Unable to parse JSON test report: ' + err.message;
       if (run.status === 'passed') run.status = 'failed';
     }
+    const reportUrl = fs.existsSync(path.join(folder, 'report', 'index.html'))
+      ? '/api/runs/' + run.id + '/report/index.html' : null;
+    run.bugDrafts = generateBugDrafts(run.failureDetection, run.id, reportUrl, evidence(run.id));
     save(run);
   });
   return { run: snapshot() };
@@ -99,7 +108,7 @@ function artifactPath(id, kind, parts) {
   if (!full.startsWith(base + path.sep) || !fs.existsSync(full) || !fs.statSync(full).isFile()) return null;
   const ext = path.extname(full).toLowerCase();
   if (kind === 'evidence' && !allowedExtensions.has(ext)) return null;
-  if (kind === 'report' && !new Set(['.html', '.js', '.css', '.json', '.png', '.svg', '.woff', '.woff2', '.webp', '.zip', '.map']).has(ext)) return null;
+  if (kind === 'report' && !new Set(['.html', '.js', '.css', '.json', '.png', '.svg', '.woff', '.woff2', '.webp', '.webm', '.zip', '.map']).has(ext)) return null;
   return full;
 }
 module.exports = { launch, snapshot, list, read, evidence, artifactPath };

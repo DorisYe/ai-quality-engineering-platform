@@ -1,30 +1,79 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { createDrafts } = require('../portal/bug-drafts');
+const { generateBugDrafts } = require('../portal/bug-drafts');
 
-const run = {
-  id: '123e4567-e89b-12d3-a456-426614174000',
-  selection: 'all',
-  status: 'failed',
-  finishedAt: '2026-10-21T00:00:00.000Z',
-  reportUrl: '/api/runs/123/report/index.html',
-  summary: { tests: [
-    { id: 'TC-001', title: 'TC-001: scenario', status: 'unexpected', error: 'Expected acknowledged, got New' },
-    { id: 'TC-002', title: 'TC-002: scenario', status: 'expected', error: null }
-  ] }
-};
-test('creates draft only for unexpected test result', () => {
-  const drafts = createDrafts(run, [{ name: 'trace.zip', url: '/evidence/trace.zip' }]);
-  assert.equal(drafts.length, 1);
-  assert.equal(drafts[0].testId, 'TC-001');
-  assert.equal(drafts[0].state, 'draft');
-  assert.equal(drafts[0].evidence.length, 1);
-  assert.match(drafts[0].classification, /Needs QA triage/);
+const runId = '01234567-89ab-4cde-8f01-234567890abc';
+const reportUrl = '/api/runs/' + runId + '/report/index.html';
+const failure = { testId: 'TC-003', title: 'TC-003: Acknowledge', status: 'unexpected', durationMs: 230, errorMessage: 'Expected Acknowledged, received Active' };
+
+test('unexpected failure creates a review-only draft with real test metadata', () => {
+  const result = generateBugDrafts({status:'available',failures:[failure]},runId,reportUrl,[]);
+  assert.equal(result.status, 'available');
+  assert.equal(result.count, 1);
+  const draft = result.drafts[0];
+  assert.equal(draft.reviewStatus, 'needs-review');
+  assert.match(draft.title, /TC-003/);
+  assert.match(draft.expected, /Acknowledged/);
+  assert.equal(draft.actual, failure.errorMessage);
+  assert.ok(draft.stepsToReproduce.length);
+  assert.equal(draft.reportUrl, reportUrl);
+  assert.equal(draft.runId, runId);
 });
-test('excludes intentional diagnostic run', () => {
-  assert.deepEqual(createDrafts({ ...run, selection: 'evidence-check' }), []);
+
+test('run-level evidence links remain explicitly scoped, not claimed as test-specific', () => {
+  const evidence = [{name:'some-test/video.webm',url:'/api/runs/foo/evidence/some-test/video.webm'}];
+  const draft = generateBugDrafts({status:'available',failures:[failure]},runId,reportUrl,evidence).drafts[0];
+  assert.equal(draft.evidenceScope, 'run-level');
+  assert.deepEqual(draft.evidenceLinks, evidence);
 });
-test('skips running runs and passes', () => {
-  assert.deepEqual(createDrafts({ ...run, status: 'running' }), []);
-  assert.deepEqual(createDrafts({ ...run, summary: { tests: [{ status: 'expected' }] } }), []);
+
+test('no failures means available with zero drafts', () => {
+  assert.deepEqual(generateBugDrafts({status:'available',failures:[]},runId,reportUrl), {status:'available',drafts:[],count:0});
+});
+
+test('intentional DIAG failure and missing reports do not create drafts', () => {
+  for(const status of ['excluded','unavailable']){
+    const result=generateBugDrafts({status,failures:[failure]},runId,reportUrl);
+    assert.equal(result.status,status);
+    assert.equal(result.count,0);
+  }
+  assert.equal(generateBugDrafts(null,runId,reportUrl).status,'unavailable');
+});
+
+test('multiple unexpected failures each get stable unique draft identifiers', () => {
+  const result=generateBugDrafts({status:'available',failures:[failure,{...failure,testId:'TC-005'}]},runId,reportUrl);
+  assert.equal(result.count,2);
+  assert.notEqual(result.drafts[0].id,result.drafts[1].id);
+  assert.equal(result.drafts[1].testId,'TC-005');
+});
+
+test('Playwright ANSI-colored locator error is human readable in Actual Result', () => {
+  const error = [
+    'Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue failed',
+    '',
+    "Locator:  locator('#status-filter')",
+    'Expected: \u001b[32m"All"\u001b[39m',
+    'Received: \u001b[31m"Active"\u001b[39m',
+    'Timeout:  12000ms',
+    '',
+    'Call log:',
+    '  - waiting for locator'
+  ].join('\n');
+  const draft = generateBugDrafts(
+    {status:'available',failures:[{...failure,testId:'TC-006',errorMessage:error}]},
+    runId,reportUrl
+  ).drafts[0];
+  assert.equal(draft.actual, "Element '#status-filter': expected \"All\", but received \"Active\".");
+  assert.equal(draft.actual.includes('\u001b'),false);
+  assert.equal(draft.actual.includes('Call log'),false);
+  assert.equal(draft.actual.includes('12000'),false);
+});
+
+test('unknown error retains useful text without misleading root-cause inference', () => {
+  const error = 'Error: Connection closed unexpectedly\nCall log:\n  - retrying\n    at test.ts:10:3';
+  const draft = generateBugDrafts(
+    {status:'available',failures:[{...failure,errorMessage:error}]},
+    runId,reportUrl
+  ).drafts[0];
+  assert.equal(draft.actual,'Error: Connection closed unexpectedly');
 });

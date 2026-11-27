@@ -7,7 +7,7 @@ function summarize(report) {
         for (const test of spec.tests || []) {
           const result = (test.results || []).at(-1);
           const title = spec.title || '';
-          const match = title.match(/\bTC-00[1-5]\b/);
+          const match = title.match(/\bTC-00[1-6]\b/);
           tests.push({
             id: match ? match[0] : title,
             title,

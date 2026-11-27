@@ -2,107 +2,376 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quality Engineering Portal | Test Management</title>
 <style>
-:root{font-family:Inter,Segoe UI,Arial,sans-serif;background:#f4f7fb;color:#17263d}*{box-sizing:border-box}body{margin:0}header{background:#14243d;color:#fff;padding:22px 30px}header small{color:#abc1df;letter-spacing:.11em;text-transform:uppercase}header h1{margin:7px 0 3px;font-size:25px}header p{margin:0;color:#c3d0e0}.layout{max-width:1240px;margin:30px auto;padding:0 22px}.toolbar,.summary{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}.metric{background:#fff;border:1px solid #e1e7f0;border-radius:14px;padding:18px;flex:1;min-width:150px}.metric span{color:#60718a;font-size:12px}.metric strong{display:block;font-size:27px;margin-top:8px}.grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(300px,.85fr);gap:20px}.panel{background:#fff;border:1px solid #e1e7f0;border-radius:14px;padding:20px;box-shadow:0 5px 18px #15253a07}.panel h2{margin-top:0;font-size:19px}.case{width:100%;text-align:left;border:1px solid #e4e9f2;background:#fff;padding:14px;margin:7px 0;border-radius:10px;cursor:pointer;color:#16263e;display:flex;align-items:center;justify-content:space-between;gap:10px}.case:hover,.case.selected{border-color:#5281db;background:#f0f5ff}.case strong{display:block}.case small{display:block;margin-top:5px;color:#68788f}.tag{font-size:11px;border-radius:99px;padding:5px 9px;background:#eaf0fc;color:#28559a}.step{margin:12px 0;line-height:1.55}button,input{font:inherit}.run{border:0;background:#2458a8;color:white;padding:11px 14px;border-radius:8px;cursor:pointer;margin-right:6px;margin-bottom:8px}.run:disabled{background:#b0bccd;cursor:not-allowed}.result-table{width:100%;border-collapse:collapse;font-size:12px}.result-table td,.result-table th{text-align:left;padding:9px;border-bottom:1px solid #e6edf5}.result-table td:nth-child(2){font-weight:700}.run-output{white-space:pre-wrap;overflow-wrap:anywhere;max-height:280px;overflow:auto;background:#111e32;color:#e6edf7;padding:13px;border-radius:10px;font:12px Consolas,monospace}input{border:1px solid #cad4e2;border-radius:8px;padding:10px;width:240px;max-width:100%}.disabled{border:1px solid #d4dbe7;background:#eef2f7;padding:10px 14px;border-radius:8px;color:#69788e;cursor:not-allowed}.muted{color:#64748b;font-size:13px;line-height:1.6}.heading{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}@media(max-width:780px){.grid{grid-template-columns:1fr}header{padding:20px}.layout{padding:0 12px}}
- .evidence-board{display:grid;gap:12px;margin:12px 0}.evidence-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:9px}.evidence-card{border:1px solid #dfe7f1;border-radius:10px;padding:12px;background:#f8fbff}.evidence-card strong{display:block;font-size:22px}.evidence-card small{color:#586b83}.evidence-section{border:1px solid #e0e6ee;border-radius:10px;padding:12px;background:white}.evidence-section h4{margin:0 0 10px}.evidence-line{padding:6px 0;border-bottom:1px solid #eef1f6;font-size:13px;overflow-wrap:anywhere}.evidence-line:last-child{border:0}.evidence-safe{font-size:12px;color:#4c6079}details.evidence-section summary{cursor:pointer;font-weight:600} </style></head><body>
-<header><small>AI-assisted quality engineering</small><h1>QA Management Portal</h1><p>Test inventory · Specifications · Automation readiness</p></header>
+:root{font-family:Inter,"Segoe UI",Arial,sans-serif;color:#23354d;background:#f5f7fb;font-synthesis:none}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0}button,input{font:inherit}button{cursor:pointer}
+:focus-visible{outline:3px solid #9abdf7;outline-offset:2px}
+.app-shell{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
+.sidebar{background:#fff;border-right:1px solid #e4eaf2;padding:26px 15px;display:flex;flex-direction:column;gap:30px}
+.brand{display:flex;align-items:center;gap:11px;padding:0 9px}.brand-mark{background:#e9f1ff;color:#3d6fc3;border-radius:12px;padding:10px;font-size:18px;font-weight:800}
+.brand strong{display:block;font-size:14px}.brand small{display:block;color:#8a97aa;font-size:11px;margin-top:3px}
+.nav{display:flex;flex-direction:column;gap:6px}.nav a{color:#667890;text-decoration:none;display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:10px;font-size:13px;font-weight:600}
+.nav a:hover,.nav a.active{background:#eaf1ff;color:#3067bc}.nav a.active{box-shadow:inset 3px 0 #497bd5}
+.sidebar-note{margin-top:auto;background:#f5f8fc;color:#73849b;padding:12px;border-radius:11px;font-size:11px;line-height:1.6}
+.workspace{min-width:0}.topbar{background:#fff;border-bottom:1px solid #e5eaf2;padding:22px 32px}.topbar small{color:#8190a5;text-transform:uppercase;letter-spacing:.12em;font-size:10px;font-weight:700}
+.topbar h1{margin:5px 0;font-size:24px;letter-spacing:-.035em}.topbar p{margin:0;color:#7d8ba0;font-size:12px}
+.layout{max-width:1360px;margin:0 auto;padding:26px 30px 56px}.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin-bottom:22px}
+.metric{background:#fff;border:1px solid #e5eaf2;border-radius:15px;padding:20px;box-shadow:0 4px 18px #17263d06}
+.metric span{color:#8290a5;font-size:12px}.metric strong{display:block;font-size:25px;margin-top:8px;letter-spacing:-.035em}
+.full-width-panel{margin-top:20px;min-width:0}.grid{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(340px,.88fr);gap:20px;align-items:start}.panel{background:#fff;border:1px solid #e5eaf2;border-radius:16px;padding:21px;box-shadow:0 5px 20px #15253a08;scroll-margin-top:22px}
+.panel h2{font-size:18px;margin:0 0 12px;letter-spacing:-.025em}.panel h3{font-size:15px}.panel h4{font-size:13px}.heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.case{width:100%;text-align:left;border:1px solid #e4e9f2;background:#fff;padding:14px;margin:8px 0;border-radius:11px;color:#23354d;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.case:hover,.case.selected{border-color:#a8c3ed;background:#f1f6ff}.case strong{display:block;font-size:13px}.case small{display:block;margin-top:6px;color:#8190a3;font-size:11px}
+.tag{font-size:11px;border-radius:99px;padding:5px 9px;background:#eaf1ff;color:#386ab5;font-weight:600}.step{margin:12px 0;line-height:1.55}
+.run{border:0;background:#4776d0;color:#fff;padding:11px 15px;border-radius:9px;font-weight:600;font-size:12px;margin:3px 6px 6px 0}
+.run:hover:not(:disabled){background:#315fb5}.run:disabled{background:#b8c6db;cursor:not-allowed}.run.diagnostic{background:#fff7e9;color:#936327;border:1px solid #f2dfbe}
+.run.diagnostic:hover:not(:disabled){background:#fff0d4}.result-table{width:100%;border-collapse:collapse;font-size:12px}.result-table td,.result-table th{text-align:left;padding:10px;border-bottom:1px solid #edf0f5}.result-table td:nth-child(2){font-weight:700}
+.run-output{white-space:pre-wrap;overflow-wrap:anywhere;max-height:280px;overflow:auto;background:#15253a;color:#e6edf7;padding:14px;border-radius:10px;font:12px Consolas,monospace}
+input{border:1px solid #d5deeb;border-radius:9px;padding:11px;width:255px;max-width:100%;font-size:12px}
+.muted{color:#7b899d;font-size:12px;line-height:1.7}.history-list{display:flex;flex-direction:column;gap:9px}.history-entry{border:1px solid #e5eaf2;border-radius:12px;overflow:hidden;background:#fff}
+.history-toggle{width:100%;border:0;background:transparent;padding:15px 17px;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:12px;color:#25384f}
+.history-toggle:hover,.history-entry.open .history-toggle{background:#f5f8fe}
+.history-main{display:flex;flex-direction:column;gap:5px;min-width:0}.history-main strong{font-size:13px}.history-main small{font-size:11px;color:#8793a6}.history-end{display:flex;align-items:center;gap:12px;flex-shrink:0}.chevron{color:#8796ab;font-size:18px}
+.status-chip{border-radius:99px;padding:5px 10px;font-size:11px;font-weight:700;text-transform:capitalize}.status-chip.passed{background:#e5f6ed;color:#258456}.status-chip.failed{background:#feeceb;color:#b34e4e}.status-chip.running{background:#e8f0ff;color:#3e6bc3}
+.run-detail{padding:18px;border-top:1px solid #e8edf4;background:#fcfdff}.run-detail h3{margin:0 0 10px}.detail-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
+.detail-metrics div{background:#f1f5fa;border-radius:9px;padding:12px}.detail-metrics strong{display:block;font-size:18px}.detail-metrics span{color:#77869b;font-size:11px}
+.asset-link{display:block;overflow-wrap:anywhere;color:#386ab5;font-size:12px;margin:10px 0}.history-hint{margin-top:8px}
+a{color:#386ab5}a:hover{text-decoration:underline}
+@media(max-width:1020px){.app-shell{grid-template-columns:190px minmax(0,1fr)}.grid{grid-template-columns:1fr}.layout{padding:22px}.topbar{padding:20px 22px}}
+@media(max-width:670px){.app-shell{display:block}.sidebar{padding:14px 18px;gap:12px;border-right:0;border-bottom:1px solid #e4eaf2}.nav{flex-direction:row;overflow:auto;gap:5px}.nav a{white-space:nowrap;padding:9px}.sidebar-note{display:none}.brand{padding:0}.summary{grid-template-columns:repeat(2,minmax(0,1fr))}.layout{padding:18px 12px}.topbar{padding:19px}.history-end{gap:6px}}
+
+.selection-toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:8px 0 13px}.selection-toolbar label{display:flex;gap:7px;align-items:center;font-size:12px;font-weight:600;color:#365278}.selection-toolbar input,.case-check{width:16px;height:16px;accent-color:#4776d0;cursor:pointer}.case-check{flex:0 0 auto;margin:0}.case-content{flex:1;min-width:0}.case-details{background:none;border:0;text-align:left;padding:0;color:inherit;flex:1;min-width:0}.case-details:hover strong{text-decoration:underline}.case-row{display:flex;align-items:center;gap:12px;border:1px solid #e4e9f2;padding:14px;margin:8px 0;border-radius:11px}.case-row:hover,.case-row.selected{background:#f1f6ff;border-color:#a8c3ed}.case-row.checked{border-left:3px solid #4776d0}.case-row .case-details strong{display:block;font-size:13px}.case-row .case-details small{display:block;margin-top:6px;color:#8190a3;font-size:11px}.run-selection{font-size:12px;color:#586b84;margin:8px 0}.run-selection strong{color:#2e65bb}
+.draft-section{margin-top:20px;padding-top:18px;border-top:1px solid #e7edf5}.draft-heading{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.draft-heading h4{margin:0;font-size:15px}.draft-card{border:1px solid #e4eaf4;border-radius:12px;margin:12px 0;padding:16px;background:#fff}.draft-card h5{margin:0 0 9px;font-size:13px;line-height:1.5}.draft-field{margin:10px 0}.draft-field strong{display:block;font-size:11px;color:#6e7f96;margin-bottom:5px}.draft-field p,.draft-field ol{margin:0;font-size:12px;line-height:1.65;overflow-wrap:anywhere;white-space:pre-wrap}.draft-note{background:#fff7e9;color:#7a5b26;padding:10px;border-radius:9px;font-size:11px;line-height:1.6;margin:8px 0}.draft-links{display:flex;flex-direction:column;gap:8px}
+.review-form{border-top:1px solid #e7edf5;margin-top:16px;padding-top:14px;display:grid;gap:12px}.review-form label{font-size:12px;color:#52647f;font-weight:650;display:grid;gap:5px}.review-form input,.review-form textarea,.review-form select{width:100%;font:inherit;font-size:12px;line-height:1.5;border:1px solid #cfd9e8;border-radius:8px;padding:10px;background:#fff;color:#22354d}.review-form textarea{resize:vertical;min-height:66px}.review-form .triage-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.review-actions{display:flex;gap:8px;flex-wrap:wrap}.review-actions button{padding:10px 13px;border-radius:8px;border:1px solid #cfd9e8;background:#fff;color:#365a91;font-size:12px;font-weight:650}.review-actions button.primary{background:#4776d0;color:#fff;border-color:#4776d0}.review-actions button:disabled{opacity:.45;cursor:not-allowed}.review-feedback{font-size:12px;line-height:1.6;color:#52647f}.review-feedback.error{color:#a33c3c}.review-feedback.success{color:#237953}.review-tag{color:#6c7c92;font-size:11px;margin:0}.review-disclaimer{background:#f7f9fd;border-radius:8px;color:#6b7c93;padding:10px;font-size:11px;line-height:1.6}
+@media(max-width:670px){.review-form .triage-grid{grid-template-columns:1fr}}
+.demo-banner{margin-bottom:20px;border:1px solid #eed8aa;background:#fff8e8;color:#78561b;padding:13px 16px;border-radius:12px;font-size:12px;line-height:1.6}.demo-banner strong{display:block;font-size:13px;margin-bottom:3px}
+</style></head><body>
+<div class="app-shell">
+<aside class="sidebar" aria-label="Main navigation">
+  <div class="brand"><div class="brand-mark">Q</div><div><strong>QA Platform</strong><small>Quality Engineering</small></div></div>
+  <nav class="nav" aria-label="Portal sections">
+    <a href="#overview" class="active">▦ &nbsp; Overview</a>
+    <a href="#test-library">☷ &nbsp; Test Library</a>
+    <a href="#test-execution">▷ &nbsp; Test Execution</a>
+    <a href="#execution-history">◷ &nbsp; Execution History</a>
+  </nav>
+  <div class="sidebar-note">Local QA management workspace<br>Playwright-powered test execution</div>
+</aside>
+<div class="workspace">
+<header class="topbar" id="overview"><small>Quality Engineering Workspace</small><h1>QA Management Portal</h1><p>Test inventory · Execution · Reporting</p></header>
 <main class="layout">
-<div class="summary"><div class="metric"><span>Test Cases</span><strong id="count">—</strong></div><div class="metric"><span>Automated</span><strong id="automated">—</strong></div><div class="metric"><span>Current Phase</span><strong>M4.4</strong></div></div>
+<div class="summary"><div class="metric"><span>Test Cases</span><strong id="count">—</strong></div><div class="metric"><span>Automated</span><strong id="automated">—</strong></div><div class="metric"><span>Current Phase</span><strong>M3.6 · UI Refresh</strong></div></div>
+
 <div class="grid">
-<section class="panel"><div class="heading"><h2>Test Library</h2><input aria-label="Search test cases" id="search" placeholder="Search ID, title or category..."></div><p class="muted">Select a case to inspect its test steps and expected result.</p><div id="cases" aria-live="polite">Loading test cases...</div></section>
-<aside class="panel"><div class="heading"><h2>Test Specification</h2><span class="tag" id="priority">—</span></div><div id="details" aria-live="polite"><p class="muted">Select a case on the left to view its specification.</p></div><hr style="border:0;border-top:1px solid #e6eaf1;margin:22px 0"><h2>Test Execution</h2><button class="run" id="run-selected" type="button">Run Selected</button><button class="run" id="run-all" type="button">Run All</button><button class="run" id="run-diagnostic" type="button" style="background:#805019">Evidence Diagnostic (Expected Failure)</button><p class="muted">The runner starts Playwright locally. Stop any existing AUT server on port 3100 before starting a run. Only one run is allowed at once. The Evidence Diagnostic intentionally fails to test screenshots, video and traces.</p><p id="run-status" role="status">No execution started.</p><div id="result-summary" class="muted" aria-live="polite">Structured test results will appear after execution.</div><div style="overflow-x:auto"><table class="result-table" id="result-table" hidden><thead><tr><th>Test</th><th>Result</th><th>Duration</th></tr></thead><tbody id="result-rows"></tbody></table></div><pre class="run-output" id="run-output" hidden></pre><p><a href="http://127.0.0.1:3100" target="_blank" rel="noopener noreferrer">Open Event Monitoring AUT ↗</a></p></aside>
-</div><section class="panel" style="margin-top:20px"><h2>Execution History</h2><p class="muted">Each run keeps its own report and evidence. Select an execution to view details.</p><div id="history">No executions yet.</div></section></main>
+<section class="panel" id="test-library"><div class="heading"><h2>Test Library</h2><input aria-label="Search test cases" id="search" placeholder="Search ID, title or category..."></div><p class="muted">Check one or more tests to run. Click a test title to inspect its specification.</p><div class="selection-toolbar"><label><input id="select-all" type="checkbox"> Select All</label><span id="selection-count" class="muted" aria-live="polite">0 selected</span><button id="clear-selection" type="button" class="tag" style="border:0;cursor:pointer">Clear</button></div><div id="cases" aria-live="polite">Loading test cases...</div></section>
+<aside class="panel" id="test-specification"><div class="heading"><h2>Test Specification</h2><span class="tag" id="priority">—</span></div><div id="details" aria-live="polite"><p class="muted">Select a case on the left to view its specification.</p></div></aside>
+</div>
+<section class="panel full-width-panel" id="test-execution">
+<h2>Test Execution</h2>
+<button class="run" id="run-selected" type="button" disabled>Run Selected (0)</button><button class="run" id="run-all" type="button">Run All</button><button class="run diagnostic" id="run-diagnostic" type="button">Evidence Diagnostic (Expected Failure)</button>
+<p class="run-selection" id="selected-test-ids" aria-live="polite">No tests selected.</p><p class="muted">Playwright starts the AUT locally. Keep port 3100 free before starting a run. Only one execution runs at a time. The evidence diagnostic intentionally fails.</p>
+<p id="run-status" role="status">No execution started.</p><div id="result-summary" class="muted" aria-live="polite">Structured test results will appear after execution.</div>
+<div style="overflow-x:auto"><table class="result-table" id="result-table" hidden><thead><tr><th>Test</th><th>Result</th><th>Duration</th></tr></thead><tbody id="result-rows"></tbody></table></div><pre class="run-output" id="run-output" hidden></pre>
+<p><a href="http://127.0.0.1:3100" target="_blank" rel="noopener noreferrer">Open Event Monitoring AUT ↗</a></p></section>
+<section class="panel" id="execution-history" style="margin-top:20px"><div class="heading"><h2>Execution History</h2><span class="tag">Run details</span></div><p class="muted">Select a run to expand its report and evidence directly below that run.</p><div id="history" class="history-list">No executions yet.</div></section>
+</main></div></div>
 <script>
 const list=document.getElementById('cases'),details=document.getElementById('details'),search=document.getElementById('search');
-let cases=[],selected=null;
+let cases=[],selected=null,selectedIds=new Set(),runInProgress=false;
 const element=(tag,text)=>{const node=document.createElement(tag);node.textContent=text;return node;};
-function renderDetails(item){selected=item.id;document.getElementById('priority').textContent=item.priority+' priority';details.replaceChildren(element('h3',item.id+' — '+item.title),element('p','Category: '+item.category),element('h4','Test steps'));const ol=document.createElement('ol');for(const step of item.steps)ol.append(element('li',step));details.append(ol,element('h4','Expected result'),element('p',item.expected));renderList();}
-function renderList(){list.replaceChildren();const q=search.value.trim().toLowerCase();const found=cases.filter(c=>(c.id+' '+c.title+' '+c.category).toLowerCase().includes(q));if(!found.length){list.append(element('p','No matching test cases.'));return;}for(const item of found){const btn=document.createElement('button');btn.type='button';btn.className='case'+(selected===item.id?' selected':'');btn.setAttribute('aria-pressed',String(selected===item.id));const left=document.createElement('span');left.append(element('strong',item.id+' · '+item.title),element('small',item.category+' · Automated with Playwright'));btn.append(left,element('span','›'));btn.onclick=()=>renderDetails(item);list.append(btn);}}
-search.addEventListener('input',renderList);
-const historyEl=document.getElementById('history');
-let assetsEl=null;
-let selectedHistoryId=null,historySignature='';
-async function showAssets(id){
- if(selectedHistoryId===id && assetsEl && assetsEl.dataset.loaded==='true'){assetsEl.hidden=!assetsEl.hidden;return;}
- selectedHistoryId=id;
- const old=historyEl.querySelector('.history-details');if(old)old.remove();
- const row=Array.from(historyEl.children).find(node=>node.dataset.runId===id);
- if(!row)return;
- assetsEl=document.createElement('div');assetsEl.className='history-details';assetsEl.style.cssText='padding:15px;margin:-4px 0 12px;border:1px solid #d8e2f0;border-radius:10px;background:#f8faff;overflow-wrap:anywhere';
- assetsEl.setAttribute('aria-live','polite');assetsEl.append(element('p','Loading execution details...'));row.after(assetsEl);
- try{const [detail,evidence]=await Promise.all([fetch('/api/runs/'+id).then(r=>r.json()),fetch('/api/runs/'+id+'/evidence').then(r=>r.json())]);const run=detail.run;if(!run)return;assetsEl.replaceChildren();assetsEl.dataset.loaded='true';assetsEl.append(element('h3','Run '+id.slice(0,8)));if(run.selection==='fixture-review')assetsEl.append(element('p','SYNTHETIC FIXTURE — not a real Playwright failure or product defect. Used only to test Bug Draft Review.'));if(run.reportUrl){const a=element('a','Open Playwright HTML Report ↗');a.href=run.reportUrl;a.target='_blank';a.rel='noopener noreferrer';assetsEl.append(a);}const files=evidence.evidence||[];assetsEl.append(element('p',files.length+' evidence file(s). Failure screenshots, videos and traces are retained when generated.'));
- function renderEvidenceBoard(info,mount){
-  const board=document.createElement('section');board.className='evidence-board';
-  const heading=element('p','LOCAL ONLY — no AI upload. Ownership is reporter-backed; root cause is not established.');heading.className='evidence-safe';board.append(heading);
-  const cards=document.createElement('div');cards.className='evidence-cards';
-  for(const [name,value] of [['Screenshots',info.counts?.screenshots||0],['Videos',info.counts?.videos||0],['Traces',info.counts?.traces||0],['Unmapped ZIP',info.unmappedTraceCount||0]]){
-   const card=document.createElement('div');card.className='evidence-card';card.append(element('strong',String(value)),element('small',name));cards.append(card);
+const selectAllBox=document.getElementById('select-all'),selectionCount=document.getElementById('selection-count'),clearSelectionButton=document.getElementById('clear-selection');
+const selectedTestIds=document.getElementById('selected-test-ids');
+function updateSelectionUI(){
+  const count=selectedIds.size,total=cases.length;
+  selectionCount.textContent=count+' of '+total+' selected';
+  selectedTestIds.textContent=count?'Selected: '+cases.filter(c=>selectedIds.has(c.id)).map(c=>c.id).join(', '):'No tests selected.';
+  selectAllBox.checked=total>0&&count===total;
+  selectAllBox.indeterminate=count>0&&count<total;
+  selectAllBox.disabled=runInProgress||total===0;
+  clearSelectionButton.disabled=runInProgress||count===0;
+  selectedButton.disabled=runInProgress||count===0;
+  selectedButton.textContent='Run Selected ('+count+')';
+}
+function renderDetails(item){
+  selected=item.id;
+  document.getElementById('priority').textContent=item.priority+' priority';
+  details.replaceChildren(element('h3',item.id+' — '+item.title),element('p','Category: '+item.category),element('h4','Test steps'));
+  const ol=document.createElement('ol');
+  for(const step of item.steps)ol.append(element('li',step));
+  details.append(ol,element('h4','Expected result'),element('p',item.expected));
+  if(item.id==='TC-006'){
+    const notice=document.createElement('div');
+    notice.className='demo-banner';
+    notice.style.margin='16px 0 0';
+    notice.append(element('strong','Controlled Defect Demo — TC-006'));
+    notice.append(element('span','Reset Filters intentionally leaves the Status filter unchanged. TC-006 is expected to FAIL for the full Failure Detection → Bug Draft → Human Review → Export demonstration. Run All will report 5 Passed / 1 Failed. Use TC-001–TC-005 for a clean regression run.'));
+    details.append(notice);
   }
-  board.append(cards);
-  const panel=(name,lines)=>{
-   const section=document.createElement('section');section.className='evidence-section';section.append(element('h4',name));
-   for(const line of lines.length?lines:['No matching evidence.']){const p=element('div',line);p.className='evidence-line';section.append(p);}
-   board.append(section);
-  };
-  const attempts=info.verifiedAttemptSummary?.attempts||[];
-  panel('Test attempts',attempts.map(a=>[a.testId||'Unknown','Attempt '+a.attempt,a.status||'unknown',a.evidenceOwnership||'unmapped','Traces: '+(a.traceCount||0)].join(' · ')));
-  const scopes=info.perAttemptTraces||[];
-  panel('Evidence and timeline',scopes.map(a=>{
-   const actions=(a.timeline||[]).map(x=>x.action+(x.failed?' (error)':'')+(x.durationMs===null?'':' · '+x.durationMs+'ms')).join(' → ');
-   return [a.testId||'Unknown','Attempt '+a.attempt,'Trace mapped',actions||'No allowlisted completed actions'].join(' | ');
-  }));
-  panel('Failure assessment',attempts.map(a=>[a.testId||'Unknown','Attempt '+a.attempt,'Reporter failure: '+(a.failureObserved?'yes':'no'),'Assertion link: unverified','Root cause: not established'].join(' · ')));
-  const advanced=document.createElement('details');advanced.className='evidence-section';advanced.append(element('summary','Technical diagnostics (safe metadata)'));
-  const pre=element('pre',JSON.stringify({testEvidenceMap:info.testEvidenceMap,attemptFailures:info.attemptFailures,perAttemptTraces:info.perAttemptTraces,assertionTrace:info.assertionTrace,traceDiagnostics:info.traceDiagnostics,correlationStatus:info.correlationStatus,traceSelectionPolicy:info.traceSelectionPolicy},null,2));
-  pre.className='run-output';advanced.append(pre);board.append(advanced);
-  mount.replaceChildren(board);
- }
- const previewButton=document.createElement('button');previewButton.className='run';previewButton.type='button';previewButton.textContent='Preview Local Evidence';
- const previewOutput=document.createElement('div');previewOutput.hidden=true;
- previewButton.onclick=async()=>{previewButton.disabled=true;previewOutput.hidden=false;previewOutput.replaceChildren(element('p','Reading local evidence metadata...'));try{
-  const response=await fetch('/api/runs/'+id+'/evidence-preview');
-  const data=await response.json();if(!response.ok)throw Error(data.error||'HTTP '+response.status);
-  renderEvidenceBoard(data.preview,previewOutput);
- }catch(e){previewOutput.replaceChildren(element('p','Evidence preview unavailable: '+e.message));}finally{previewButton.disabled=false;}};
- assetsEl.append(previewButton,previewOutput);
- const draftResponse=await fetch('/api/runs/'+id+'/bug-drafts');
- if(draftResponse.ok){const {drafts}=await draftResponse.json();assetsEl.append(element('h3','Bug Drafts (review only)'));if(!drafts.length)assetsEl.append(element('p',run.selection==='evidence-check'?'Diagnostic failures are intentionally excluded.':'No unexpected test failures in this run.'));for(const draft of drafts){const section=document.createElement('section');section.className='panel';section.style.marginBottom='12px';section.append(element('h4',draft.title),element('p',draft.classification),element('p','Actual: '+draft.actualResult),element('p','Expected: '+draft.expectedResult));if(draft.triageSuggestion)section.append(element('p','Triage suggestion (rule-based, low confidence): '+draft.triageSuggestion.suggestedCategory+' — '+draft.triageSuggestion.rationale));const ol=document.createElement('ol');for(const step of draft.reproductionSteps)ol.append(element('li',step));section.append(element('strong','Review / reproduce before creating any issue'),ol);const copy=document.createElement('button');copy.className='run';copy.type='button';copy.textContent='Copy Bug Draft';copy.onclick=()=>navigator.clipboard.writeText([draft.title,draft.classification,'Expected: '+draft.expectedResult,'Actual: '+draft.actualResult,'Steps:',...draft.reproductionSteps.map((x,i)=>(i+1)+'. '+x),'Run: '+draft.runId].join('\\n'));section.append(copy);
-const aiButton=document.createElement('button');aiButton.className='run';aiButton.type='button';aiButton.textContent='Analyze with AI (opt-in)';
-const aiResult=element('p','AI does not run until clicked. Only test ID, title, expected and actual text are sent; no screenshots, videos or traces.');
-aiButton.onclick=async()=>{
- aiButton.disabled=true;
- aiResult.textContent='Analyzing selected failure...';
- try {
-  const response=await fetch('/api/runs/'+id+'/bug-drafts/'+encodeURIComponent(draft.id)+'/ai-analysis',{
-   method:'POST',
-   headers:{'Content-Type':'application/json'},
-   body:JSON.stringify({})
-  });
-  const data=await response.json();
-  if(!response.ok)throw new Error(data.error||('HTTP '+response.status));
-  const analysis=data.analysis;
-  aiResult.textContent=(analysis.source==='mock'?'OFFLINE MOCK RESPONSE — NOT REAL AI ANALYSIS. ':'AI hypothesis (unverified): ')+analysis.hypothesis+
-   ' | Suggested category: '+analysis.suggestedCategory+
-   ' | Recommended check: '+analysis.nextCheck+
-   ' | Human review required. No review fields were changed.';
- } catch(e) {
-  aiResult.textContent='AI analysis unavailable: '+e.message;
- } finally {
-  aiButton.disabled=false;
- }
-};
-section.append(aiButton,aiResult);
-const control=document.createElement('div');control.style.marginTop='12px';
-function picker(label,values,current){const wrap=document.createElement('label');wrap.style.display='inline-block';wrap.style.marginRight='12px';wrap.append(element('span',label+' '));const select=document.createElement('select');select.style.padding='7px';select.style.marginTop='5px';for(const value of values){const opt=document.createElement('option');opt.value=value;opt.textContent=value;select.append(opt);}select.value=current;wrap.append(select);control.append(wrap);return select;}
-const category=picker('Classification',['Unclassified test failure','Product defect','Test automation issue','Environment issue','Flaky test','Other'],draft.category);
-const priority=picker('Priority',['Unassigned','Low','Medium','High','Critical'],draft.priority);
-const status=picker('Review status',['draft','in_review','approved','rejected'],draft.state);
-const notes=document.createElement('textarea');notes.placeholder='QA review notes (required for approval)';notes.value=draft.reviewNotes||'';notes.maxLength=2000;notes.style.cssText='display:block;width:100%;padding:9px;margin:10px 0;min-height:70px';
-control.append(notes);
-const save=document.createElement('button');save.type='button';save.className='run';save.textContent='Save Review';
-const feedback=element('p','');feedback.setAttribute('role','status');
-save.onclick=async()=>{save.disabled=true;try{const response=await fetch('/api/runs/'+id+'/bug-drafts/'+encodeURIComponent(draft.id),{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({category:category.value,priority:priority.value,state:status.value,reviewNotes:notes.value})});const body=await response.json();if(!response.ok)throw Error(body.error||'HTTP '+response.status);feedback.textContent='Review saved · '+body.draft.state;}catch(e){feedback.textContent='Unable to save: '+e.message;}finally{save.disabled=false;}};
-control.append(save,feedback);section.append(control);assetsEl.append(section);}}for(const file of files){const p=document.createElement('p');const link=element('a',file.name);link.href=file.url;link.target='_blank';link.rel='noopener noreferrer';p.append(link);assetsEl.append(p);}}catch(err){assetsEl.append(element('p','Unable to load run evidence: '+err.message));}}
-async function refreshHistory(){try{const data=await fetch('/api/runs',{cache:'no-store'}).then(r=>r.json());const runs=data.runs||[];const signature=runs.map(r=>r.id+':'+r.status).join('|');if(signature===historySignature)return;historySignature=signature;historyEl.replaceChildren();if(!runs.length){historyEl.textContent='No executions yet.';return;}for(const run of runs){const b=document.createElement('button');b.type='button';b.className='case';b.textContent=new Date(run.startedAt).toLocaleString()+' · '+run.selection+' · '+run.status.toUpperCase()+(run.summary?' · '+run.summary.passed+'/'+run.summary.total+' passed':'');b.dataset.runId=run.id;b.onclick=()=>showAssets(run.id);historyEl.append(b);}if(selectedHistoryId && runs.some(r=>r.id===selectedHistoryId)){const id=selectedHistoryId;selectedHistoryId=null;showAssets(id);}}catch(err){historyEl.textContent='History unavailable: '+err.message;}}
+  renderList();
+}
+function renderList(){
+  list.replaceChildren();
+  const q=search.value.trim().toLowerCase();
+  const found=cases.filter(c=>(c.id+' '+c.title+' '+c.category).toLowerCase().includes(q));
+  if(!found.length){list.append(element('p','No matching test cases.'));return;}
+  for(const item of found){
+    const row=document.createElement('div');
+    row.className='case-row'+(selected===item.id?' selected':'')+(selectedIds.has(item.id)?' checked':'');
+    const box=document.createElement('input');
+    box.type='checkbox';box.className='case-check';box.checked=selectedIds.has(item.id);
+    box.disabled=runInProgress;box.setAttribute('aria-label','Select '+item.id+' for execution');
+    box.addEventListener('change',()=>{
+      if(box.checked)selectedIds.add(item.id);else selectedIds.delete(item.id);
+      row.classList.toggle('checked',box.checked);
+      updateSelectionUI();
+    });
+    const btn=document.createElement('button');btn.type='button';btn.className='case-details';
+    btn.setAttribute('aria-pressed',String(selected===item.id));
+    btn.append(element('strong',item.id+' · '+item.title),element('small',item.category+' · Automated with Playwright'));
+    btn.onclick=()=>renderDetails(item);
+    row.append(box,btn);list.append(row);
+  }
+}
+search.addEventListener('input',renderList);
+selectAllBox.addEventListener('change',()=>{
+  if(selectAllBox.checked)selectedIds=new Set(cases.map(c=>c.id));
+  else selectedIds.clear();
+  renderList();updateSelectionUI();
+});
+clearSelectionButton.addEventListener('click',()=>{selectedIds.clear();renderList();updateSelectionUI();});
+const historyEl=document.getElementById('history');
+let selectedHistoryId=null,historySignature='',historyRequestSequence=0;
+async function showAssets(id, target){
+  const requestSequence=++historyRequestSequence;
+  target.replaceChildren(element('p','Loading run details...'));
+  try {
+    const [detailResponse,evidenceResponse]=await Promise.all([
+      fetch('/api/runs/'+encodeURIComponent(id),{cache:'no-store'}),
+      fetch('/api/runs/'+encodeURIComponent(id)+'/evidence',{cache:'no-store'})
+    ]);
+    if(!detailResponse.ok||!evidenceResponse.ok)throw Error('Unable to fetch run details');
+    const [detail,evidence]=await Promise.all([detailResponse.json(),evidenceResponse.json()]);
+    if(requestSequence!==historyRequestSequence||selectedHistoryId!==id||!target.isConnected)return;
+    const run=detail.run;if(!run)throw Error('Run was not found');
+    target.replaceChildren(element('h3','Run '+id.slice(0,8)));
+    if(run.summary){
+      const metrics=document.createElement('div');metrics.className='detail-metrics';
+      for(const [name,value] of [['Total',run.summary.total],['Passed',run.summary.passed],['Failed',run.summary.failed]]){
+        const cell=document.createElement('div');cell.append(element('strong',String(value)),element('span',name));metrics.append(cell);
+      }
+      target.append(metrics);
+      const table=document.createElement('table');table.className='result-table';
+      const head=document.createElement('thead'),header=document.createElement('tr');
+      for(const label of ['Test','Result','Duration'])header.append(element('th',label));
+      head.append(header);table.append(head);
+      const body=document.createElement('tbody');
+      for(const item of run.summary.tests||[]){
+        const tr=document.createElement('tr');
+        const status=item.status==='expected'?'Passed':item.status==='unexpected'?'Failed':item.status;
+        tr.append(element('td',item.id),element('td',status),element('td',(item.durationMs/1000).toFixed(2)+'s'));
+        if(item.error)tr.title=item.error;
+        body.append(tr);
+      }
+      table.append(body);target.append(table);
+    }else{target.append(element('p','No structured results available for this run.'));}
+    if(run.reportUrl){
+      const a=element('a','Open Playwright HTML Report ↗');a.className='asset-link';a.href=run.reportUrl;a.target='_blank';a.rel='noopener noreferrer';target.append(a);
+    }
+    const files=evidence.evidence||[];
+    target.append(element('p',files.length+' evidence file(s). Screenshots, video and traces are retained on failed tests when available.'));
+    for(const file of files){
+      const link=element('a',file.name);link.className='asset-link';link.href=file.url;link.target='_blank';link.rel='noopener noreferrer';target.append(link);
+    }
+    const draftSection=document.createElement('section');draftSection.className='draft-section';
+    const draftHeading=document.createElement('div');draftHeading.className='draft-heading';
+    draftHeading.append(element('h4','Bug Drafts — Review Required'));
+    draftSection.append(draftHeading);
+    const bugDrafts=run.bugDrafts;
+    if(!bugDrafts)draftSection.append(element('p','Bug Draft generation was not enabled for this historical run.'));
+    else if(bugDrafts.status==='excluded')draftSection.append(element('p','Diagnostic run excluded: no Bug Drafts generated.'));
+    else if(bugDrafts.status==='unavailable')draftSection.append(element('p','No Bug Drafts: structured failure results were unavailable.'));
+    else if(!bugDrafts.count)draftSection.append(element('p','No unexpected failures detected. No Bug Drafts generated.'));
+    else{
+      draftSection.append(element('p',bugDrafts.count+' candidate draft(s). Review each failure before creating a defect.'));
+      for(const draft of bugDrafts.drafts){
+        const card=document.createElement('article');card.className='draft-card';
+        card.append(element('h5',draft.title));
+        card.append(element('p','Generated draft · Awaiting human review. This test failure does not prove a product bug.'));
+        const form=document.createElement('form');form.className='review-form';
+        function field(label,initial,multiline=false){
+          const wrapper=document.createElement('label');wrapper.append(element('span',label));
+          const input=document.createElement(multiline?'textarea':'input');
+          if(multiline)input.rows=3;else input.type='text';
+          input.value=initial||'';
+          wrapper.append(input);form.append(wrapper);return input;
+        }
+        function choice(label,options,initial,parent){
+          const wrapper=document.createElement('label');wrapper.append(element('span',label));
+          const select=document.createElement('select');
+          for(const [value,name] of options){
+            const option=document.createElement('option');option.value=value;option.textContent=name;select.append(option);
+          }
+          select.value=initial;wrapper.append(select);(parent||form).append(wrapper);return select;
+        }
+        const titleInput=field('Bug Title',draft.title);
+        const expectedInput=field('Expected Result',draft.expected,true);
+        const actualInput=field('Actual Result / Error',draft.actual,true);
+        const stepsInput=field('Steps to Reproduce (one step per line)',(draft.stepsToReproduce||[]).join('\n'),true);
+        const grid=document.createElement('div');grid.className='triage-grid';
+        const decision=choice('Triage Decision',[
+          ['needs-investigation','Needs Investigation'],
+          ['confirmed-bug','Confirmed Product Bug'],
+          ['not-a-bug','Not a Product Bug']
+        ],'needs-investigation',grid);
+        const status=choice('Review Status',[
+          ['needs-review','Needs Review'],['reviewed','Reviewed']
+        ],'needs-review',grid);
+        const severity=choice('Severity',[
+          ['unassigned','Unassigned'],['critical','Critical'],['high','High'],['medium','Medium'],['low','Low']
+        ],'unassigned',grid);
+        const priority=choice('Priority',[
+          ['unassigned','Unassigned'],['p0','P0'],['p1','P1'],['p2','P2'],['p3','P3']
+        ],'unassigned',grid);
+        form.append(grid);
+        const notes=field('Review Notes','',true);
+        const links=document.createElement('div');links.className='draft-links';
+        if(draft.reportUrl){
+          const link=element('a','Open Playwright HTML Report ↗');link.href=draft.reportUrl;
+          link.target='_blank';link.rel='noopener noreferrer';link.className='asset-link';links.append(link);
+        }
+        if(draft.evidenceLinks?.length){
+          links.append(element('p','Run-level Evidence: links are not mapped to an individual test.'));
+          for(const file of draft.evidenceLinks){
+            const link=element('a',file.name);link.href=file.url;link.target='_blank';
+            link.rel='noopener noreferrer';link.className='asset-link';links.append(link);
+          }
+        }
+        form.append(links);
+        const disclaimer=element('div','A confirmed result means QA triage has confirmed a product bug; saving a review does not file a ticket.');
+        disclaimer.className='review-disclaimer';form.append(disclaimer);
+        const actions=document.createElement('div');actions.className='review-actions';
+        const save=document.createElement('button');save.type='submit';save.textContent='Save Review';save.className='primary';
+        const exportButton=document.createElement('button');exportButton.type='button';exportButton.textContent='Export Bug Report (.txt)';exportButton.disabled=true;
+        const jira=document.createElement('button');jira.type='button';jira.textContent='Jira Integration (Coming Soon)';jira.disabled=true;jira.title='Placeholder only — no Jira integration is implemented';
+        actions.append(save,exportButton,jira);form.append(actions);
+        const feedback=element('p','Loading saved review...');feedback.className='review-feedback';form.append(feedback);
+        card.append(form);
+        const reviewEndpoint='/api/runs/'+encodeURIComponent(run.id)+'/drafts/'+(Number(draft.id.split(':').at(-1)))+'/review';
+        let revision=0,savedReview=null,dirty=false;
+        const editFields=[titleInput,expectedInput,actualInput,stepsInput,decision,status,severity,priority,notes];
+        function payload(){
+          return {
+            title:titleInput.value,expected:expectedInput.value,actual:actualInput.value,
+            stepsToReproduce:stepsInput.value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean),
+            triageDecision:decision.value,reviewStatus:status.value,severity:severity.value,
+            priority:priority.value,reviewNotes:notes.value,revision
+          };
+        }
+        function populate(review){
+          titleInput.value=review.title;expectedInput.value=review.expected;actualInput.value=review.actual;
+          stepsInput.value=review.stepsToReproduce.join('\n');
+          decision.value=review.triageDecision;status.value=review.reviewStatus;
+          severity.value=review.severity;priority.value=review.priority;notes.value=review.reviewNotes;
+          revision=review.revision;savedReview=review;dirty=false;exportButton.disabled=false;
+        }
+        for(const input of editFields)input.addEventListener('input',()=>{
+          dirty=true;exportButton.disabled=true;
+          feedback.textContent='Unsaved changes';feedback.className='review-feedback';
+        });
+        fetch(reviewEndpoint,{cache:'no-store'}).then(async response=>{
+          if(!response.ok)throw Error('HTTP '+response.status);
+          return response.json();
+        }).then(data=>{
+          if(!form.isConnected||dirty)return;
+          if(data.review){populate(data.review);feedback.textContent='Previously saved · '+new Date(data.review.updatedAt).toLocaleString();}
+          else feedback.textContent='No saved review yet. Edit the fields and save.';
+        }).catch(err=>{feedback.textContent='Unable to load saved review: '+err.message;feedback.className='review-feedback error';});
+        form.addEventListener('submit',async event=>{
+          event.preventDefault();
+          save.disabled=true;feedback.textContent='Saving...';
+          try{
+            const response=await fetch(reviewEndpoint,{
+              method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload())
+            });
+            const data=await response.json();
+            if(!response.ok)throw Error(data.error||'HTTP '+response.status);
+            savedReview=data.review;populate(data.review);
+            feedback.textContent='Review saved successfully · '+new Date(data.review.updatedAt).toLocaleString();
+            feedback.className='review-feedback success';
+          }catch(err){feedback.textContent='Save failed: '+err.message;feedback.className='review-feedback error';}
+          finally{save.disabled=false;}
+        });
+        exportButton.addEventListener('click',()=>{
+          if(!savedReview||dirty)return;
+          const lines=[
+            'QA Bug Review Report','===================',
+            'Run ID: '+draft.runId,'Test ID: '+draft.testId,
+            'Review Status: '+savedReview.reviewStatus,
+            'Triage Decision: '+savedReview.triageDecision,
+            'Severity: '+savedReview.severity,'Priority: '+savedReview.priority,
+            'Title: '+savedReview.title,'',
+            'Expected Result:',savedReview.expected,'',
+            'Actual Result:',savedReview.actual,'',
+            'Steps to Reproduce:',
+            ...savedReview.stepsToReproduce.map((step,i)=>(i+1)+'. '+step),'',
+            'Review Notes:',savedReview.reviewNotes,'',
+            'Playwright Report:',draft.reportUrl||'Unavailable','',
+            'Run-level Evidence (not test-specific):',
+            ...(draft.evidenceLinks||[]).map(file=>file.name+' — '+file.url),'',
+            'Reviewed At: '+savedReview.updatedAt,
+            'Note: This export does not create a Jira ticket.'
+          ];
+          const blob=new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
+          const url=URL.createObjectURL(blob);
+          const anchor=document.createElement('a');anchor.href=url;anchor.download='bug-review-'+draft.testId+'-'+draft.runId.slice(0,8)+'.txt';
+          document.body.append(anchor);anchor.click();anchor.remove();
+          setTimeout(()=>URL.revokeObjectURL(url),1000);
+        });
+        draftSection.append(card);
+      }
+    }
+    target.append(draftSection);
+  }catch(err){
+    if(requestSequence===historyRequestSequence&&target.isConnected)target.replaceChildren(element('p','Unable to load run details: '+err.message));
+  }
+}
+async function refreshHistory(){
+  try{
+    const response=await fetch('/api/runs',{cache:'no-store'});
+    if(!response.ok)throw Error('HTTP '+response.status);
+    const data=await response.json(),runs=data.runs||[];
+    const signature=runs.map(r=>r.id+':'+r.status+':'+(r.finishedAt||'')).join('|');
+    if(signature===historySignature)return;
+    historySignature=signature;historyEl.replaceChildren();
+    if(!runs.length){historyEl.textContent='No executions yet.';selectedHistoryId=null;return;}
+    let openTarget=null;
+    for(const run of runs){
+      const entry=document.createElement('div');entry.className='history-entry';
+      const button=document.createElement('button');button.type='button';button.className='history-toggle';
+      const main=document.createElement('span');main.className='history-main';
+      main.append(element('strong',run.selection==='all'?'Run All':run.selection==='evidence-check'?'Evidence Diagnostic':Array.isArray(run.selection)?'Selected: '+run.selection.join(', '):run.selection));
+      main.append(element('small',new Date(run.startedAt).toLocaleString()+' · '+(run.summary?run.summary.passed+'/'+run.summary.total+' passed':'Results pending')));
+      const end=document.createElement('span');end.className='history-end';
+      const chip=element('span',run.status);chip.className='status-chip '+run.status;
+      const chevron=element('span','⌄');chevron.className='chevron';
+      end.append(chip,chevron);button.append(main,end);
+      const panel=document.createElement('div');panel.className='run-detail';panel.hidden=true;panel.id='run-detail-'+run.id;
+      button.setAttribute('aria-controls',panel.id);button.setAttribute('aria-expanded','false');
+      button.onclick=()=>{
+        if(selectedHistoryId===run.id){selectedHistoryId=null;historyRequestSequence++;panel.hidden=true;entry.classList.remove('open');button.setAttribute('aria-expanded','false');return;}
+        selectedHistoryId=run.id;
+        for(const other of historyEl.querySelectorAll('.run-detail'))other.hidden=true;
+        for(const other of historyEl.querySelectorAll('.history-entry'))other.classList.remove('open');
+        for(const other of historyEl.querySelectorAll('.history-toggle'))other.setAttribute('aria-expanded','false');
+        panel.hidden=false;entry.classList.add('open');button.setAttribute('aria-expanded','true');
+        showAssets(run.id,panel);
+      };
+      entry.append(button,panel);historyEl.append(entry);
+      if(selectedHistoryId===run.id){panel.hidden=false;entry.classList.add('open');button.setAttribute('aria-expanded','true');openTarget=panel;}
+    }
+    if(openTarget)showAssets(selectedHistoryId,openTarget);
+    else selectedHistoryId=null;
+  }catch(err){historyEl.textContent='History unavailable: '+err.message;}
+}
 const runStatus=document.getElementById('run-status'),runOutput=document.getElementById('run-output');
 const selectedButton=document.getElementById('run-selected'),allButton=document.getElementById('run-all'),diagnosticButton=document.getElementById('run-diagnostic');
 let lastRunId=null;
@@ -114,7 +383,7 @@ async function refreshRun(){
   const {run}=await response.json();
   if(!run)return;
   const running=run.status==='running';
-  selectedButton.disabled=running;allButton.disabled=running;diagnosticButton.disabled=running;
+  runInProgress=running;allButton.disabled=running;diagnosticButton.disabled=running;updateSelectionUI();
   runStatus.textContent='Run '+run.id.slice(0,8)+' · '+run.selection+' · '+run.status.toUpperCase()+(run.exitCode===null?'':' · Exit '+run.exitCode);
   runOutput.hidden=false;runOutput.textContent=run.output||run.error||'Test process is starting...';
   if(run.id!==lastRunId){lastRunId=run.id;resultRows.replaceChildren();resultsTable.hidden=true;summaryEl.textContent='Run in progress — waiting for Playwright JSON results.';}
@@ -131,9 +400,16 @@ async function startRun(selection){
   await refreshRun();
  }catch(e){runStatus.textContent='Could not start run: '+e.message;await refreshRun();}
 }
-selectedButton.addEventListener('click',()=>startRun(selected));
+selectedButton.addEventListener('click',()=>{if(selectedIds.size>0&&!runInProgress)startRun(cases.filter(c=>selectedIds.has(c.id)).map(c=>c.id));});
 allButton.addEventListener('click',()=>startRun('all'));
 diagnosticButton.addEventListener('click',()=>startRun('evidence-check'));
+
+for(const navLink of document.querySelectorAll('.nav a')){
+  navLink.addEventListener('click',()=>{
+    for(const sibling of document.querySelectorAll('.nav a'))sibling.classList.remove('active');
+    navLink.classList.add('active');
+  });
+}
 refreshRun();refreshHistory();setInterval(refreshRun,1500);setInterval(refreshHistory,3000);
-fetch('/api/test-cases').then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json()}).then(data=>{cases=data;document.getElementById('count').textContent=cases.length;document.getElementById('automated').textContent=cases.length;renderDetails(cases[0]);}).catch(e=>{list.textContent='Unable to load test specifications: '+e.message});
+fetch('/api/test-cases').then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json()}).then(data=>{cases=data;document.getElementById('count').textContent=cases.length;document.getElementById('automated').textContent=cases.length;renderDetails(cases[0]);updateSelectionUI();}).catch(e=>{list.textContent='Unable to load test specifications: '+e.message});
 </script></body></html>

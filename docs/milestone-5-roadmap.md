@@ -1,74 +1,30 @@
-# M5 — CI/CD Integration & Quality Gates (Updated Roadmap)
+# M5 — CI/CD Integration & Automated Quality Gates (Final Scope)
 
 ## Overall objective
 
-Run core Playwright and Node tests automatically in GitHub Actions, retain CI test reports and evidence, and make CI execution history visible from the existing local QA Portal. Finish with quality checks and a reviewed PR workflow.
+Integrate automated tests into GitHub Actions to enable reliable CI-based test execution, automated quality gates, and test reporting, independently of the local QA Portal.
 
-**Scope rule:** M5 integrates test execution and CI visibility. M6 still owns aggregated Release Quality Dashboard metrics, historical quality trends and Go/No-Go decisions. M7 owns QA Portal self-testing automation. M8.1 owns future Failure Signature and lightweight Jira-linked Bug Management enhancements.
+## Milestones
 
-## M5.1 — GitHub Actions Pipeline Setup — ACCEPTED
+- **M5.1 — GitHub Actions Pipeline Setup — ACCEPTED**. Cloud Ubuntu + Node.js 22, unit/integration and Playwright core regression, push/PR/manual triggers.
+- **M5.2 — CI Reports & Artifacts — ACCEPTED**. HTML report and fail-only screenshot/video/trace evidence, with intentional TC-006 validation isolated from required CI.
+- **M5.3 — Automated Quality Gates — ACCEPTED**. Static syntax checks, Node unit/integration, and Playwright core regression; positive and negative-path validation documented.
+- **M5 Final Integration & Acceptance — IN PROGRESS**. Verify the renamed `test:unit-integration` command on the final branch, resolve divergence with `main`, integrate safely through reviewed PR and verify required CI on the default branch. See `docs/milestone-5-final-integration.md`.
 
-- Run Node unit/integration tests.
-- Run clean Playwright Core Regression TC-001–TC-005.
-- Trigger from push, PR and manual dispatch.
-- Keep TC-006 intentional defect and DIAG-001 diagnostic outside normal CI.
+## Scope boundary
 
-Owner confirmed local test commands and GitHub Actions success.
+The former **M5.4 — QA Portal CI Integration** is moved **in full to M6 — QA Portal Test Execution & Scheduling**:
+1. CI Playwright test-case results, failure evidence and a minimal *Tests Not Run* / pipeline failure indication; no DevOps step dashboard.
+2. Manual GitHub Actions test execution from Portal, alongside existing Local Runs.
+3. Recurring GitHub-based schedules.
+4. One-time scheduled CI runs using a reliable cloud-persistent mechanism (not a local Portal timer).
 
-## M5.2 — CI Test Reports & Artifacts — IN PROGRESS
+The former M5.4 planning document on its isolated branch remains historical planning only; it is **not** a completed M5 feature.
 
-- Upload the Playwright HTML Report for normal and failed executions when generated.
-- Upload screenshots, videos and traces when failures produce evidence.
-- 7-day artifact retention.
-- Owner confirmed **all five happy-path checks PASS**.
-- **Remaining acceptance:** manually run `controlled-defect` TC-006 and verify downloadable HTML Report, Screenshot, Video and Trace from a deliberately failed Actions run. Normal CI must remain green.
+## Later roadmap
 
-## M5.3 — Automated Quality Gates — PREVIOUSLY M5.4
+- **M7 — Release Quality Dashboard** (formerly M6).
+- **M8 — QA Portal Automated Testing** (formerly M7).
+- **M9 — Bug Management & Jira Integration** (formerly M8).
 
-**Goal:** Establish reliable CI quality verdicts and required checks before integrating CI results into the Portal.
-
-- Required Node unit/integration and clean core Playwright tests.
-- Basic static checks and unambiguous failure semantics.
-- TC-006 continues excluded from required CI quality gates; optional manually triggered Controlled Defect execution is expected to fail by design.
-- Verify a failing required check produces a failed CI run without changing the permanent demo defect.
-- Leave PR branch-protection configuration to M5.5.
-
-## M5.4 — GitHub Actions Run History in QA Portal — NEW
-
-**Goal:** Display local and GitHub Actions executions in QA Portal so QA can track both in one place, without pretending a cloud run was executed locally.
-
-Proposed lean MVP:
-
-1. Add a clear execution source distinction (e.g. **Local** / **GitHub Actions**) in or alongside the existing Execution History. Do not rewrite existing local history.
-2. Read **recent CI workflow runs** for this repository, showing commit/branch, trigger, started time, status/conclusion, and workflow run ID.
-3. Offer direct **Open GitHub Run** and **Download Artifacts** links for CI runs. Where available, show a useful test summary without confusing job-level success with individual test results.
-4. Provide a Refresh action and useful empty/error states, including GitHub API not configured and API rate limits.
-5. Keep manually dispatched `controlled-defect` CI runs visibly labeled as **intentional demo failure**, distinct from actual core CI regressions.
-6. Fetch CI history using a **read-only GitHub API integration through the Portal backend**. For private repositories, configure credentials locally via environment variables or another secure mechanism; never place a GitHub token in the browser, frontend bundle, Git or saved run records.
-7. Do not synchronize CI artifacts into `data/qa-results` in the MVP, and do not trigger remote workflows from the Portal. The original local M4 Bug Draft and Human Review flow remains local-only.
-
-Acceptance criteria:
-
-- Local execution history and its evidence/review/export features remain unchanged.
-- Recent GitHub Actions runs load in the Portal with correct source, branch, conclusion and links.
-- A successful core run and an intentionally failed manual TC-006 run are distinguishable.
-- The user can navigate from a CI run to its GitHub Actions page and downloadable artifacts.
-- Missing credentials/network failures are handled safely and do not block local Portal operation.
-- Read-only access; no automatic Jira tickets, CI mutations or premature release metrics.
-
-Design validation must happen before implementation, especially repository access and the minimum GitHub authentication permissions needed.
-
-## M5.5 — Final Integration & PR / Branch Protection — PREVIOUSLY M5.4
-
-- Verify the full CI pipeline and Portal CI visibility.
-- Validate PR test results.
-- Configure required status checks/branch protection where account and repository settings permit.
-- Final M5 acceptance and documentation.
-
-## Development sequence
-
-Complete M5.2 failure-evidence acceptance first. Then implement M5.3 quality gates on a fresh feature branch based on accepted M5.2; integrate CI history into QA Portal in M5.4 after the CI contract is stable. Do not modify working CI/test execution while merely revising this roadmap.
-
-## Non-goals
-
-No scheduled nightly test run for now; no release readiness scoring (M6), no standalone Portal smoke suite (M7), no automatic defect deduplication or Jira integration (M8.1).
+**Status: M5.1–M5.3 accepted; M5 final integration and main-branch verification pending.**
